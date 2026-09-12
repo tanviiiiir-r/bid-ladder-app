@@ -32,7 +32,9 @@ export function SiteHeader() {
           <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
             <LayoutList className="size-4" />
           </span>
-          <span className="font-display text-base font-bold tracking-tight">Bid Ladder</span>
+          <span className="whitespace-nowrap font-display text-base font-bold tracking-tight">
+            Bid Ladder
+          </span>
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
@@ -66,7 +68,7 @@ export function SiteHeader() {
           <ThemeToggle />
           {loading ? null : user ? (
             <>
-              <Button asChild size="sm" variant="ghost">
+              <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
                 <Link to="/dashboard">My listings</Link>
               </Button>
               <Button asChild size="sm">
@@ -81,7 +83,7 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              <Button asChild size="sm" variant="ghost">
+              <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
                 <Link to="/auth">Sign in</Link>
               </Button>
               <Button asChild size="sm">
