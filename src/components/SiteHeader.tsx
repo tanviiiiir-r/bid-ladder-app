@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { LayoutList, Plus } from "lucide-react";
 
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,7 +29,8 @@ export function SiteHeader() {
           <span className="font-display text-base font-bold tracking-tight">Bid Ladder</span>
         </Link>
 
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1 sm:gap-2">
+          <ThemeToggle />
           {loading ? null : user ? (
             <>
               <Button asChild size="sm" variant="ghost">
