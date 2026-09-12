@@ -95,17 +95,34 @@ function BoardPage() {
             />
           </div>
 
+          {listings.length > 0 && listings.length <= 3 ? (
+            <p className="mt-5 rounded-lg border border-border bg-surface/60 px-3 py-2 text-xs text-muted-foreground">
+              Early board: only {listings.length} approved{" "}
+              {listings.length === 1 ? "listing" : "listings"} here so far. Positions move fast — and
+              we don't seed fake popularity.
+            </p>
+          ) : null}
+
           <div className="mt-5 flex flex-col gap-3">
             {listings.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border bg-surface/50 p-10 text-center">
                 <p className="font-display text-lg font-semibold">The ladder is empty</p>
                 <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
                   No approved listings in this category yet. Real rankings start as soon as makers
-                  submit and visitors show up.
+                  submit and real visitors show up. We don't seed fake popularity, so an empty board
+                  stays empty until someone earns a spot.
                 </p>
-                <Button asChild className="mt-5">
-                  <Link to="/submit">Submit your product</Link>
-                </Button>
+                <div className="mt-5 flex flex-col items-center gap-2">
+                  <Button asChild>
+                    <Link to="/submit">Submit your product</Link>
+                  </Button>
+                  <Link
+                    to="/how-ranking-works"
+                    className="text-xs text-primary underline-offset-2 hover:underline"
+                  >
+                    See how ranking works
+                  </Link>
+                </div>
               </div>
             ) : (
               listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)
