@@ -90,8 +90,12 @@ export const reviewListing = createServerFn({ method: "POST" })
     });
     if (logError) throw new Error(logError.message);
 
+    // Service-role recompute right after review so an approved listing is
+    // ranked immediately instead of waiting for the scheduled refresh.
+    // Public reads never trigger this.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.rpc("recompute_rankings");
+    const { error: rankError } = await supabaseAdmin.rpc("recompute_rankings");
+    if (rankError) console.error("[rankings] post-review recompute failed", rankError.message);
 
     return { ok: true };
   });
