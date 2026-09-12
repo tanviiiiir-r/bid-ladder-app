@@ -17,6 +17,8 @@ export type BoardListing = {
   previousRank: number | null;
   uniqueViews: number;
   shares: number;
+  /** When the persisted ranking row was last recomputed. */
+  computedAt: string | null;
 };
 
 type Row = {
@@ -33,11 +35,12 @@ type Row = {
     previous_rank: number | null;
     unique_views: number;
     shares: number;
+    computed_at: string | null;
   } | null;
 };
 
 const SELECT =
-  "id, slug, name, tagline, url, description, approved_at, categories(name, slug), rankings(rank, previous_rank, unique_views, shares)";
+  "id, slug, name, tagline, url, description, approved_at, categories(name, slug), rankings(rank, previous_rank, unique_views, shares, computed_at)";
 
 function toListing(row: Row): BoardListing {
   return {
@@ -54,6 +57,7 @@ function toListing(row: Row): BoardListing {
     previousRank: row.rankings?.previous_rank ?? null,
     uniqueViews: row.rankings?.unique_views ?? 0,
     shares: row.rankings?.shares ?? 0,
+    computedAt: row.rankings?.computed_at ?? null,
   };
 }
 
