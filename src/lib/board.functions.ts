@@ -80,13 +80,19 @@ async function maybeRecompute() {
 }
 
 export const getCategories = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createPublicSupabase();
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id, slug, name")
-    .order("sort_order");
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  try {
+    const supabase = createPublicSupabase();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, slug, name")
+      .order("sort_order");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  } catch (error) {
+    // A backend hiccup must not blank the board-first homepage.
+    console.error("[categories] read failed", error);
+    return [] as { id: string; slug: string; name: string }[];
+  }
 });
 
 export const getBoard = createServerFn({ method: "GET" })
