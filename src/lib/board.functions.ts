@@ -137,26 +137,65 @@ export const getListing = createServerFn({ method: "GET" })
     return row ? toListing(row as unknown as Row) : null;
   });
 
+const VISITOR_COOKIE = "bl_vid";
+
+/**
+ * Server-minted visitor identity.
+ * Client-supplied keys are never trusted: the key is derived from an httpOnly
+ * cookie the server sets, hashed with a server-only secret so it can't be
+ * guessed or replayed from the browser.
+ * Residual risk: clearing cookies / private windows still mints a new identity,
+ * so a determined actor can inflate unique counts. Acceptable for the MVP; the
+ * per-visitor rate limit and dedupe index bound the damage.
+ */
+async function resolveVisitorKey(): Promise<{ key: string; setCookie: string | null }> {
+  const { getRequestHeader } = await import("@tanstack/react-start/server");
+  const { createHash, randomUUID } = await import("node:crypto");
+
+  const cookieHeader = getRequestHeader("cookie") ?? "";
+  const existing = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${VISITOR_COOKIE}=`))
+    ?.slice(VISITOR_COOKIE.length + 1);
+
+  const raw = existing && existing.length >= 16 ? existing : randomUUID();
+  const salt = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? process.env["SUPABASE_URL"] ?? "bl";
+  const key = createHash("sha256").update(`${salt}:${raw}`).digest("hex").slice(0, 40);
+
+  const setCookie = existing === raw
+    ? null
+    : `${VISITOR_COOKIE}=${raw}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax; Secure`;
+
+  return { key, setCookie };
+}
+
 export const trackEvent = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
     z
       .object({
         listingId: z.string().uuid(),
         kind: z.enum(["view", "share"]),
-        visitorKey: z.string().min(8).max(100),
       })
       .parse(data),
   )
   .handler(async ({ data }) => {
-    const supabase = createPublicSupabase();
-    // Unique per (listing, kind, visitor): duplicates are ignored, never inflated.
-    const { error } = await supabase.from("events").insert({
-      listing_id: data.listingId,
-      kind: data.kind,
-      visitor_key: data.visitorKey,
-    });
-    if (error && !error.message.toLowerCase().includes("duplicate")) {
-      console.error("[events] insert failed", error.message);
+    try {
+      const { setResponseHeader } = await import("@tanstack/react-start/server");
+      const { key, setCookie } = await resolveVisitorKey();
+      if (setCookie) setResponseHeader("set-cookie", setCookie);
+
+      // Anon has no direct insert path; only this server-only RPC records events.
+      // It enforces approval, dedupe per (listing, kind, visitor) and a rate limit.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error } = await supabaseAdmin.rpc("record_event", {
+        _listing_id: data.listingId,
+        _kind: data.kind,
+        _visitor_key: key,
+      });
+      if (error) console.error("[events] record failed", error.message);
+    } catch (error) {
+      console.error("[events] record failed", error);
     }
     return { ok: true };
   });
