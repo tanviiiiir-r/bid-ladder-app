@@ -246,13 +246,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
       recompute_rankings: { Args: never; Returns: undefined }
     }
     Enums: {
