@@ -19,7 +19,22 @@ export const submitListing = createServerFn({ method: "POST" })
       .object({
         name: z.string().trim().min(2).max(60),
         tagline: z.string().trim().min(10).max(120),
-        url: z.string().trim().url().max(300),
+        url: z
+          .string()
+          .trim()
+          .max(300, "URL must be 300 characters or fewer")
+          .refine((value) => {
+            let parsed: URL;
+            try {
+              parsed = new URL(value);
+            } catch {
+              return false;
+            }
+            if (parsed.protocol !== "https:") return false;
+            if (parsed.username || parsed.password) return false;
+            if (!parsed.hostname.includes(".")) return false;
+            return true;
+          }, "Enter a full https:// URL (no credentials)"),
         description: z.string().trim().min(20).max(1200),
         categoryId: z.string().uuid(),
       })
