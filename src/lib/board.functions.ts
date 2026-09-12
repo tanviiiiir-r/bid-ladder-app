@@ -80,13 +80,19 @@ async function maybeRecompute() {
 }
 
 export const getCategories = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createPublicSupabase();
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id, slug, name")
-    .order("sort_order");
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  try {
+    const supabase = createPublicSupabase();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, slug, name")
+      .order("sort_order");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  } catch (error) {
+    // A backend hiccup must not blank the board-first homepage.
+    console.error("[categories] read failed", error);
+    return [] as { id: string; slug: string; name: string }[];
+  }
 });
 
 export const getBoard = createServerFn({ method: "GET" })
@@ -94,21 +100,27 @@ export const getBoard = createServerFn({ method: "GET" })
     z.object({ category: z.string().optional() }).parse(data ?? {}),
   )
   .handler(async ({ data }): Promise<BoardListing[]> => {
-    await maybeRecompute();
+    try {
+      await maybeRecompute();
 
-    const supabase = createPublicSupabase();
-    let query = supabase.from("listings").select(SELECT).eq("status", "approved");
-    if (data.category && data.category !== "all") {
-      query = query.eq("categories.slug", data.category);
+      const supabase = createPublicSupabase();
+      let query = supabase.from("listings").select(SELECT).eq("status", "approved");
+      if (data.category && data.category !== "all") {
+        query = query.eq("categories.slug", data.category);
+      }
+
+      const { data: rows, error } = await query.limit(200);
+      if (error) throw new Error(error.message);
+
+      return ((rows ?? []) as unknown as Row[])
+        .filter((row) => (data.category && data.category !== "all" ? row.categories : true))
+        .map(toListing)
+        .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
+    } catch (error) {
+      // Never 500 the homepage on a transient backend read failure.
+      console.error("[board] read failed", error);
+      return [];
     }
-
-    const { data: rows, error } = await query.limit(200);
-    if (error) throw new Error(error.message);
-
-    return ((rows ?? []) as unknown as Row[])
-      .filter((row) => (data.category && data.category !== "all" ? row.categories : true))
-      .map(toListing)
-      .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
   });
 
 export const getListing = createServerFn({ method: "GET" })
