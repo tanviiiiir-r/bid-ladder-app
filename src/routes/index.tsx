@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Flame } from "lucide-react";
+import { Flame, Scale } from "lucide-react";
 
 import { CategoryFilter } from "@/components/board/CategoryFilter";
 import { ListingCard } from "@/components/board/ListingCard";
+import { RisingStrip } from "@/components/board/RisingStrip";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { useBoardRealtime } from "@/hooks/useBoardRealtime";
@@ -73,7 +74,16 @@ function BoardPage() {
               Early-stage AI, SaaS and tools ranked by unique views, shares and freshness. No paid
               placement, no seeded popularity.
             </p>
+            <Link
+              to="/how-ranking-works"
+              className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+            >
+              <Scale className="size-3.5" />
+              How ranking works — money never buys organic position
+            </Link>
           </div>
+
+          <RisingStrip listings={listings} />
 
           <div className="mt-7">
             <CategoryFilter
