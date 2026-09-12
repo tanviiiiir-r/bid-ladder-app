@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Minus, Sparkles } from "lucide-react";
 
+import { getMovement } from "@/lib/ranking";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -8,41 +9,37 @@ type Props = {
   className?: string;
 };
 
-/** Movement vs the previous ranking recompute. Real signals only. */
-export function MovementBadge({ rank, previousRank, className }: Props) {
-  if (rank == null) return null;
+const neutral =
+  "inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground";
 
-  if (previousRank == null) {
+/**
+ * Movement vs the previous ranking recompute. Real persisted ranks only,
+ * with hysteresis so single-position noise outside the top 10 reads as Flat.
+ */
+export function MovementBadge({ rank, previousRank, className }: Props) {
+  const movement = getMovement(rank, previousRank);
+
+  if (movement.kind === "none") return null;
+
+  if (movement.kind === "new") {
     return (
-      <span
-        className={cn(
-          "inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground",
-          className,
-        )}
-      >
+      <span className={cn(neutral, className)}>
         <Sparkles className="size-3" />
         New
       </span>
     );
   }
 
-  const delta = previousRank - rank;
-
-  if (delta === 0) {
+  if (movement.kind === "flat") {
     return (
-      <span
-        className={cn(
-          "inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground",
-          className,
-        )}
-      >
+      <span className={cn(neutral, className)}>
         <Minus className="size-3" />
         Flat
       </span>
     );
   }
 
-  const up = delta > 0;
+  const up = movement.kind === "up";
 
   return (
     <span
@@ -51,9 +48,14 @@ export function MovementBadge({ rank, previousRank, className }: Props) {
         up ? "bg-rise/15 text-rise" : "bg-fall/15 text-fall",
         className,
       )}
+      title={
+        up
+          ? `Up ${movement.delta} since the previous recompute`
+          : `Down ${movement.delta} since the previous recompute`
+      }
     >
       {up ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
-      {Math.abs(delta)}
+      {movement.delta}
     </span>
   );
 }
