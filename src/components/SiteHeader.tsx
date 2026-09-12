@@ -30,6 +30,9 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
+          <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
+            <Link to="/how-ranking-works">How ranking works</Link>
+          </Button>
           <ThemeToggle />
           {loading ? null : user ? (
             <>
