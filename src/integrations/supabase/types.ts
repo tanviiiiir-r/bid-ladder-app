@@ -247,6 +247,14 @@ export type Database = {
     }
     Functions: {
       recompute_rankings: { Args: never; Returns: undefined }
+      record_event: {
+        Args: {
+          _kind: Database["public"]["Enums"]["event_kind"]
+          _listing_id: string
+          _visitor_key: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
