@@ -143,13 +143,16 @@ function DashboardPage() {
                   <p className="mt-2 text-sm text-fall">Reason: {listing.rejection_reason}</p>
                 ) : null}
                 {listing.status === "approved" ? (
-                  <Link
-                    to="/l/$slug"
-                    params={{ slug: listing.slug }}
-                    className="mt-2 inline-block text-sm text-primary"
-                  >
-                    View on the board
-                  </Link>
+                  <>
+                    <Link
+                      to="/l/$slug"
+                      params={{ slug: listing.slug }}
+                      className="mt-2 inline-block text-sm text-primary"
+                    >
+                      View on the board
+                    </Link>
+                    <ClimbPanel listing={listing} />
+                  </>
                 ) : null}
               </article>
             ))
