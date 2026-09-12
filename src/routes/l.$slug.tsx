@@ -9,7 +9,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/board.functions";
 import { listingQuery } from "@/lib/queries";
-import { getVisitorKey } from "@/lib/visitor";
 
 export const Route = createFileRoute("/l/$slug")({
   loader: async ({ context, params }) => {
@@ -62,7 +61,7 @@ function ListingPage() {
   useEffect(() => {
     if (!data || tracked.current) return;
     tracked.current = true;
-    void trackEvent({ data: { listingId: data.id, kind: "view", visitorKey: getVisitorKey() } });
+    void trackEvent({ data: { listingId: data.id, kind: "view" } });
   }, [data]);
 
   if (!data) return null;
@@ -70,7 +69,6 @@ function ListingPage() {
   async function handleShare() {
     if (!data) return;
     const url = window.location.href;
-    void trackEvent({ data: { listingId: data.id, kind: "share", visitorKey: getVisitorKey() } });
     try {
       if (navigator.share) {
         await navigator.share({ title: data.name, text: data.tagline, url });
@@ -78,8 +76,10 @@ function ListingPage() {
         await navigator.clipboard.writeText(url);
         toast.success("Link copied");
       }
+      // Only a completed share counts; a dismissed sheet must not inflate shares.
+      void trackEvent({ data: { listingId: data.id, kind: "share" } });
     } catch {
-      /* user dismissed the share sheet */
+      /* user dismissed the share sheet — no event recorded */
     }
   }
 
