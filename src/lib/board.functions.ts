@@ -57,27 +57,11 @@ function toListing(row: Row): BoardListing {
   };
 }
 
-const STALE_MS = 5 * 60 * 1000;
-
-/** Recomputes rankings when the last recompute is older than STALE_MS. */
-async function maybeRecompute() {
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
-      .from("rankings")
-      .select("computed_at")
-      .order("computed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const last = data?.computed_at ? new Date(data.computed_at).getTime() : 0;
-    if (Date.now() - last > STALE_MS) {
-      await supabaseAdmin.rpc("recompute_rankings");
-    }
-  } catch (error) {
-    console.error("[rankings] recompute skipped", error);
-  }
-}
+/**
+ * Public reads are detached from ranking recompute: they only read persisted
+ * rankings. Recompute is server-only — a scheduled database job plus the
+ * admin approve/reject path. Never triggered by a public GET.
+ */
 
 export const getCategories = createServerFn({ method: "GET" }).handler(async () => {
   try {
@@ -101,8 +85,6 @@ export const getBoard = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }): Promise<BoardListing[]> => {
     try {
-      await maybeRecompute();
-
       const supabase = createPublicSupabase();
       let query = supabase.from("listings").select(SELECT).eq("status", "approved");
       if (data.category && data.category !== "all") {
