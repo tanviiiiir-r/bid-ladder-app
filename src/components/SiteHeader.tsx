@@ -39,6 +39,30 @@ export function SiteHeader() {
           <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
             <Link to="/how-ranking-works">How ranking works</Link>
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild className="sm:hidden">
+              <Button size="icon" variant="ghost" aria-label="More, including how ranking works">
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/how-ranking-works">
+                  <Scale className="size-4" />
+                  How ranking works
+                </Link>
+              </DropdownMenuItem>
+              {user ? (
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard">My listings</Link>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem asChild>
+                  <Link to="/auth">Sign in</Link>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <ThemeToggle />
           {loading ? null : user ? (
             <>
