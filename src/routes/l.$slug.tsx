@@ -145,9 +145,14 @@ function ListingPage() {
           </p>
         </section>
 
-        <p className="mt-6 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <p className="mt-6 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <Eye className="size-3.5" />
-          Rank comes from real attention only: unique views, shares and freshness.
+          Rank comes from real attention only: unique views, shares and freshness. Money never buys
+          organic position —{" "}
+          <Link to="/how-ranking-works" className="text-primary underline-offset-2 hover:underline">
+            how ranking works
+          </Link>
+          .
         </p>
       </main>
     </div>

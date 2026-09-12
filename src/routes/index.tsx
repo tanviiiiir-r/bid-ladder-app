@@ -103,7 +103,12 @@ function BoardPage() {
           </div>
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
-            Movement (↑/↓) compares each listing to the previous ranking recompute.
+            Movement (↑/↓) compares each listing to the previous ranking recompute. Money never buys
+            organic position —{" "}
+            <Link to="/how-ranking-works" className="text-primary underline-offset-2 hover:underline">
+              see how ranking works
+            </Link>
+            .
           </p>
         </div>
       </main>
