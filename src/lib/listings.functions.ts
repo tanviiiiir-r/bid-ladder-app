@@ -65,7 +65,9 @@ export const getMyListings = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("listings")
-      .select("id, slug, name, tagline, status, rejection_reason, created_at, categories(name)")
+      .select(
+        "id, slug, name, tagline, status, rejection_reason, created_at, approved_at, categories(name), rankings(rank, previous_rank, unique_views, shares)",
+      )
       .eq("owner_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
