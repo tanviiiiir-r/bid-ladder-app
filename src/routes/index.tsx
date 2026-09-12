@@ -6,6 +6,7 @@ import { CategoryFilter } from "@/components/board/CategoryFilter";
 import { ListingCard } from "@/components/board/ListingCard";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
+import { useBoardRealtime } from "@/hooks/useBoardRealtime";
 import { boardQuery, categoriesQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/")({
@@ -52,6 +53,7 @@ function BoardPage() {
   const navigate = useNavigate();
   const { data: categories } = useSuspenseQuery(categoriesQuery());
   const { data: listings } = useSuspenseQuery(boardQuery(category));
+  useBoardRealtime();
 
   return (
     <div className="min-h-screen">
