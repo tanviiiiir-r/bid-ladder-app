@@ -16,21 +16,34 @@ export const Route = createFileRoute("/l/$slug")({
     if (!listing) throw notFound();
     return { listing };
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
     if (!loaderData) {
       return {
         meta: [{ title: "Listing unavailable — Bid Ladder" }, { name: "robots", content: "noindex" }],
       };
     }
     const { listing } = loaderData;
-    const title = `${listing.name} — rank #${listing.rank ?? "—"} on Bid Ladder`;
+    // Only observed facts: real persisted rank (omitted when absent) and real counts.
+    const title =
+      listing.rank == null
+        ? `${listing.name} — approved on Bid Ladder`
+        : `${listing.name} — rank #${listing.rank} on Bid Ladder`;
+    const stats = `${listing.uniqueViews} unique views · ${listing.shares} shares · ranked by real attention only`;
+    const url = `https://rising-star-board.lovable.app/l/${params.slug}`;
+    const image = "https://rising-star-board.lovable.app/og/bid-ladder-card.jpg";
     return {
       meta: [
         { title },
         { name: "description", content: listing.tagline },
         { property: "og:title", content: title },
-        { property: "og:description", content: listing.tagline },
+        { property: "og:description", content: `${listing.tagline} — ${stats}` },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: url },
+        { property: "og:image", content: image },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: image },
       ],
+      links: [{ rel: "canonical", href: url }],
     };
   },
   component: ListingPage,
