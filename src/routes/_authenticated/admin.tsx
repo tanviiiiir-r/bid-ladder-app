@@ -150,7 +150,9 @@ function AdminPage() {
                         review.mutate({
                           listingId: listing.id,
                           action: "reject",
-                          reason: reasons[listing.id]?.trim() || undefined,
+                          ...(reasons[listing.id]?.trim()
+                            ? { reason: reasons[listing.id]!.trim() }
+                            : {}),
                         })
                       }
                     >

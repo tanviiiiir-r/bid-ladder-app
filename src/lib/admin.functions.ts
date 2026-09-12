@@ -77,7 +77,7 @@ export const reviewListing = createServerFn({ method: "POST" })
       .update(
         data.action === "approve"
           ? { status: "approved", approved_at: new Date().toISOString(), rejection_reason: null }
-          : { status: "rejected", approved_at: null, rejection_reason: data.reason },
+          : { status: "rejected", approved_at: null, rejection_reason: data.reason ?? null },
       )
       .eq("id", data.listingId);
     if (error) throw new Error(error.message);

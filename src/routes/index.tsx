@@ -9,10 +9,9 @@ import { Button } from "@/components/ui/button";
 import { boardQuery, categoriesQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    category: typeof search.category === "string" ? search.category : "all",
-  }),
-  loaderDeps: ({ search: { category } }) => ({ category }),
+  validateSearch: (search: Record<string, unknown>): { category?: string } =>
+    typeof search["category"] === "string" ? { category: search["category"] } : {},
+  loaderDeps: ({ search }) => ({ category: search.category ?? "all" }),
   loader: async ({ context, deps }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(categoriesQuery()),
@@ -49,7 +48,7 @@ export const Route = createFileRoute("/")({
 });
 
 function BoardPage() {
-  const { category } = Route.useSearch();
+  const { category = "all" } = Route.useSearch();
   const navigate = useNavigate();
   const { data: categories } = useSuspenseQuery(categoriesQuery());
   const { data: listings } = useSuspenseQuery(boardQuery(category));
