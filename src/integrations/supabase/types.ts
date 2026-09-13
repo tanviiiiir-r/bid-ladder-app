@@ -52,26 +52,135 @@ export type Database = {
       categories: {
         Row: {
           created_at: string
+          description: string
           id: string
           name: string
           slug: string
           sort_order: number
+          status: Database["public"]["Enums"]["category_status"]
         }
         Insert: {
           created_at?: string
+          description?: string
           id?: string
           name: string
           slug: string
           sort_order?: number
+          status?: Database["public"]["Enums"]["category_status"]
         }
         Update: {
           created_at?: string
+          description?: string
           id?: string
           name?: string
           slug?: string
           sort_order?: number
+          status?: Database["public"]["Enums"]["category_status"]
         }
         Relationships: []
+      }
+      credit_ledger: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          reason: string | null
+          reference_id: string | null
+          reference_type: string | null
+          type: Database["public"]["Enums"]["credit_ledger_type"]
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          type: Database["public"]["Enums"]["credit_ledger_type"]
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          type?: Database["public"]["Enums"]["credit_ledger_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_allocations: {
+        Row: {
+          amount_cents: number
+          first_allocated_at: string
+          listing_id: string
+          utc_date: string
+        }
+        Insert: {
+          amount_cents?: number
+          first_allocated_at?: string
+          listing_id: string
+          utc_date: string
+        }
+        Update: {
+          amount_cents?: number
+          first_allocated_at?: string
+          listing_id?: string
+          utc_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_allocations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_rank_snapshots: {
+        Row: {
+          allocation_cents: number
+          frozen_at: string
+          listing_id: string
+          rank: number
+          shares: number
+          unique_views: number
+          utc_date: string
+        }
+        Insert: {
+          allocation_cents: number
+          frozen_at?: string
+          listing_id: string
+          rank: number
+          shares?: number
+          unique_views?: number
+          utc_date: string
+        }
+        Update: {
+          allocation_cents?: number
+          frozen_at?: string
+          listing_id?: string
+          rank?: number
+          shares?: number
+          unique_views?: number
+          utc_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_rank_snapshots_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {
@@ -107,6 +216,8 @@ export type Database = {
       }
       listings: {
         Row: {
+          allocation_cents: number
+          allocation_set_at: string | null
           approved_at: string | null
           category_id: string
           created_at: string
@@ -122,6 +233,8 @@ export type Database = {
           url: string
         }
         Insert: {
+          allocation_cents?: number
+          allocation_set_at?: string | null
           approved_at?: string | null
           category_id: string
           created_at?: string
@@ -137,6 +250,8 @@ export type Database = {
           url: string
         }
         Update: {
+          allocation_cents?: number
+          allocation_set_at?: string | null
           approved_at?: string | null
           category_id?: string
           created_at?: string
@@ -220,6 +335,44 @@ export type Database = {
           },
         ]
       }
+      today_rankings: {
+        Row: {
+          computed_at: string
+          listing_id: string
+          previous_rank: number | null
+          rank: number
+          score: number
+          shares: number
+          unique_views: number
+        }
+        Insert: {
+          computed_at?: string
+          listing_id: string
+          previous_rank?: number | null
+          rank: number
+          score?: number
+          shares?: number
+          unique_views?: number
+        }
+        Update: {
+          computed_at?: string
+          listing_id?: string
+          previous_rank?: number | null
+          rank?: number
+          score?: number
+          shares?: number
+          unique_views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "today_rankings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -241,11 +394,39 @@ export type Database = {
         }
         Relationships: []
       }
+      wallets: {
+        Row: {
+          available_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_cents?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_cents?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_grant_credits: {
+        Args: {
+          _cents: number
+          _idempotency_key?: string
+          _reason?: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      freeze_daily_board: { Args: { _utc_date?: string }; Returns: undefined }
       recompute_rankings: { Args: never; Returns: undefined }
       record_event: {
         Args: {
@@ -255,9 +436,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      set_allocation: {
+        Args: { _listing_id: string; _new_cents: number }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user"
+      category_status: "active" | "hidden"
+      credit_ledger_type:
+        | "admin_grant"
+        | "allocation"
+        | "allocation_release"
+        | "topup"
+        | "points_conversion"
+        | "adjustment"
       event_kind: "view" | "share"
       listing_status: "pending" | "approved" | "rejected"
     }
@@ -388,6 +581,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      category_status: ["active", "hidden"],
+      credit_ledger_type: [
+        "admin_grant",
+        "allocation",
+        "allocation_release",
+        "topup",
+        "points_conversion",
+        "adjustment",
+      ],
       event_kind: ["view", "share"],
       listing_status: ["pending", "approved", "rejected"],
     },
