@@ -100,9 +100,7 @@ function ListingPage() {
   const { slug } = Route.useParams();
   const { board, date } = Route.useSearch();
   const { data } = useSuspenseQuery(listingQuery(slug, board, date));
-  const { data: peers } = useSuspenseQuery(
-    boardQuery(data?.categorySlug ?? "all", board, date),
-  );
+  const { data: peers } = useSuspenseQuery(boardQuery(data?.categorySlug ?? "all", board, date));
 
   const tracked = useRef(false);
 
@@ -183,12 +181,13 @@ function ListingPage() {
           {onBoard ? (
             <div className="mt-5 rounded-xl border border-border bg-surface p-4">
               <p className="text-sm font-medium text-foreground">
-                Anyone can take this rank for {formatCents(overtakeCents)} on the {data.categoryName}{" "}
-                board.
+                Anyone can take this rank for {formatCents(overtakeCents)} on the{" "}
+                {data.categoryName} board.
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {boardLabel} board · paying that lands them at #{resultingRank}
-                {above ? ` (currently ${above.name} at ${formatCents(above.allocationCents)})` : ""}.
+                {above ? ` (currently ${above.name} at ${formatCents(above.allocationCents)})` : ""}
+                .
                 {data.rank === 1
                   ? ` Claiming #1 costs ${formatCents(data.costToClaimFirstCents)}.`
                   : ""}
@@ -200,10 +199,9 @@ function ListingPage() {
                 Not on the public {boardLabel} board yet.
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                A listing appears once its allocation reaches{" "}
-                {formatCents(RANKING.minVisibleCents)}
-                {shortfallCents > 0 ? ` — ${formatCents(shortfallCents)} to go` : ""}. Claiming #1 on
-                this board costs {formatCents(data.costToClaimFirstCents)}.
+                A listing appears once its allocation reaches {formatCents(RANKING.minVisibleCents)}
+                {shortfallCents > 0 ? ` — ${formatCents(shortfallCents)} to go` : ""}. Claiming #1
+                on this board costs {formatCents(data.costToClaimFirstCents)}.
               </p>
               <Button asChild variant="secondary" size="sm" className="mt-3">
                 <Link to="/dashboard">
@@ -254,7 +252,6 @@ function ListingPage() {
           </Link>
           .
         </p>
-
       </main>
     </div>
   );
