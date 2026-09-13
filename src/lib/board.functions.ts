@@ -88,25 +88,24 @@ export const getBoard = createServerFn({ method: "GET" })
     z.object({ category: z.string().optional() }).parse(data ?? {}),
   )
   .handler(async ({ data }): Promise<BoardListing[]> => {
-    try {
-      const supabase = createPublicSupabase();
-      let query = supabase.from("listings").select(SELECT).eq("status", "approved");
-      if (data.category && data.category !== "all") {
-        query = query.eq("categories.slug", data.category);
-      }
-
-      const { data: rows, error } = await query.limit(200);
-      if (error) throw new Error(error.message);
-
-      return ((rows ?? []) as unknown as Row[])
-        .filter((row) => (data.category && data.category !== "all" ? row.categories : true))
-        .map(toListing)
-        .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
-    } catch (error) {
-      // Never 500 the homepage on a transient backend read failure.
-      console.error("[board] read failed", error);
-      return [];
+    const supabase = createPublicSupabase();
+    let query = supabase.from("listings").select(SELECT).eq("status", "approved");
+    if (data.category && data.category !== "all") {
+      query = query.eq("categories.slug", data.category);
     }
+
+    const { data: rows, error } = await query.limit(200);
+    // A read failure must never look like an empty ladder: surface it so the
+    // route error boundary can offer a retry instead of showing "no listings".
+    if (error) {
+      console.error("[board] read failed", error.message);
+      throw new Error("The board couldn't load right now. Please retry.");
+    }
+
+    return ((rows ?? []) as unknown as Row[])
+      .filter((row) => (data.category && data.category !== "all" ? row.categories : true))
+      .map(toListing)
+      .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
   });
 
 export const getListing = createServerFn({ method: "GET" })
