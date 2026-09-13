@@ -153,7 +153,7 @@ export const Route = createFileRoute("/api/public/og/l/$slug")({
             </div>
 
             <div style={{ display: "flex", fontSize: 26, color: "#94a3b8" }}>
-              Real attention only · money never buys organic position
+              Credits allocated to a listing determine its rank
             </div>
           </div>,
           {
