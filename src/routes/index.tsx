@@ -45,6 +45,26 @@ export const Route = createFileRoute("/")({
   ),
 });
 
+function BoardError({ error }: { error: Error }) {
+  const router = useRouter();
+  return (
+    <div className="min-h-screen">
+      <SiteHeader />
+      <main className="board-grid-bg">
+        <div className="mx-auto max-w-5xl px-4 py-16 text-center" role="alert">
+          <h1 className="font-display text-xl font-semibold">The board couldn't load</h1>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+            {error.message} This is a loading problem, not an empty board — no listings were lost.
+          </p>
+          <Button className="mt-5" onClick={() => void router.invalidate()}>
+            Retry
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function BoardPage() {
   const { category = "all" } = Route.useSearch();
   const navigate = useNavigate();
