@@ -373,24 +373,6 @@ export type Database = {
           },
         ]
       }
-      wallets: {
-        Row: {
-          available_cents: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          available_cents?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          available_cents?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string
@@ -412,6 +394,24 @@ export type Database = {
         }
         Relationships: []
       }
+      wallets: {
+        Row: {
+          available_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_cents?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_cents?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -426,10 +426,7 @@ export type Database = {
         }
         Returns: Json
       }
-      freeze_daily_board: {
-        Args: { _utc_date?: string }
-        Returns: undefined
-      }
+      freeze_daily_board: { Args: { _utc_date?: string }; Returns: undefined }
       recompute_rankings: { Args: never; Returns: undefined }
       record_event: {
         Args: {
@@ -440,10 +437,7 @@ export type Database = {
         Returns: boolean
       }
       set_allocation: {
-        Args: {
-          _listing_id: string
-          _new_cents: number
-        }
+        Args: { _listing_id: string; _new_cents: number }
         Returns: Json
       }
     }
