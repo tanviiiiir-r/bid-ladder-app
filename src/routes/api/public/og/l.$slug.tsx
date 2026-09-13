@@ -161,7 +161,7 @@ export const Route = createFileRoute("/api/public/og/l/$slug")({
             height: 630,
             headers: {
               // Short TTL + versioned URL: never serve a rank claim the DB has moved past.
-              "cache-control": "public, max-age=60, s-maxage=300",
+              "cache-control": "public, max-age=300, s-maxage=300, stale-while-revalidate=60",
             },
           },
         );
