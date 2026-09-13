@@ -1,39 +1,73 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Flame, Scale } from "lucide-react";
+import { Crown, Flame, Scale } from "lucide-react";
 
+import { BoardTabs } from "@/components/board/BoardTabs";
 import { CategoryFilter } from "@/components/board/CategoryFilter";
 import { ListingCard } from "@/components/board/ListingCard";
 import { RanksFreshness } from "@/components/board/RanksFreshness";
 import { RisingStrip } from "@/components/board/RisingStrip";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useBoardRealtime } from "@/hooks/useBoardRealtime";
-import { boardQuery, categoriesQuery } from "@/lib/queries";
+import { formatCents } from "@/lib/format";
+import { boardQuery, categoriesQuery, dailyArchiveDatesQuery } from "@/lib/queries";
+import { BOARDS, RANKING, utcDateString, type BoardKind } from "@/lib/ranking";
+
+type BoardSearch = { category?: string; board?: BoardKind; date?: string };
+
+function parseBoard(value: unknown): BoardKind | undefined {
+  return typeof value === "string" && (BOARDS as readonly string[]).includes(value)
+    ? (value as BoardKind)
+    : undefined;
+}
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): { category?: string } =>
-    typeof search["category"] === "string" ? { category: search["category"] } : {},
-  loaderDeps: ({ search }) => ({ category: search.category ?? "all" }),
+  validateSearch: (search: Record<string, unknown>): BoardSearch => {
+    const out: BoardSearch = {};
+    if (typeof search["category"] === "string") out.category = search["category"];
+    const board = parseBoard(search["board"]);
+    if (board) out.board = board;
+    if (typeof search["date"] === "string" && /^\d{4}-\d{2}-\d{2}$/.test(search["date"])) {
+      out.date = search["date"];
+    }
+    return out;
+  },
+  loaderDeps: ({ search }) => ({
+    category: search.category ?? "all",
+    board: search.board ?? ("all_time" as BoardKind),
+    date: search.date,
+  }),
   loader: async ({ context, deps }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(categoriesQuery()),
-      context.queryClient.ensureQueryData(boardQuery(deps.category)),
+      context.queryClient.ensureQueryData(dailyArchiveDatesQuery()),
+      context.queryClient.ensureQueryData(boardQuery(deps.category, deps.board, deps.date)),
     ]);
   },
   head: () => ({
     meta: [
-      { title: "Bid Ladder — The live board of what's getting attention" },
+      { title: "Bid Ladder — The live allocation board" },
       {
         name: "description",
         content:
-          "A regional discovery board for early-stage AI, SaaS and tools. Ranked by real attention: unique views, shares and freshness. No pay-to-rank.",
+          "The live board of early-stage AI, SaaS and tools. Credits allocated to a listing determine its rank. All-time, Today and Daily boards.",
       },
-      { property: "og:title", content: "Bid Ladder — The live attention board" },
+      { property: "og:title", content: "Bid Ladder — The live allocation board" },
       {
         property: "og:description",
-        content: "Discover early-stage AI, SaaS and tools ranked by real attention only.",
+        content:
+          "Credits allocated to a listing determine its rank. Claim #1 on the All-time, Today or Daily board.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: BoardPage,
@@ -44,6 +78,7 @@ export const Route = createFileRoute("/")({
     </div>
   ),
 });
+
 
 function BoardError({ error }: { error: Error }) {
   const router = useRouter();
