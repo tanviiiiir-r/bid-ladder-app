@@ -53,7 +53,7 @@ export const Route = createFileRoute("/l/$slug")({
       listing.rank == null
         ? `${listing.name} — on Bid Ladder (rank pending)`
         : `#${listing.rank} on Bid Ladder — ${listing.name}`;
-    const description = `${listing.tagline} · Unique views & shares only. Money never buys organic position.`;
+    const description = `${listing.tagline} · Credits allocated to a listing determine its rank on Bid Ladder.`;
     const url = `https://rising-star-board.lovable.app/l/${params.slug}`;
     // Versioned by real rank + recompute time so a cached card can never claim
     // a rank the database has already moved past.
