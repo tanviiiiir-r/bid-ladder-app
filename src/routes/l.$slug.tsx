@@ -1,21 +1,43 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import { ArrowLeft, ExternalLink, Eye, Share2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Eye, Share2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 import { MovementBadge } from "@/components/MovementBadge";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/board.functions";
-import { listingQuery } from "@/lib/queries";
+import { formatCents } from "@/lib/format";
+import { boardQuery, listingQuery } from "@/lib/queries";
+import { BOARDS, RANKING, type BoardKind } from "@/lib/ranking";
+
+type ListingSearch = { board: BoardKind; date?: string };
+
+function parseSearch(search: Record<string, unknown>): ListingSearch {
+  const rawBoard = String(search.board ?? "all_time");
+  const board = (BOARDS as readonly string[]).includes(rawBoard)
+    ? (rawBoard as BoardKind)
+    : "all_time";
+  const rawDate = typeof search.date === "string" ? search.date : undefined;
+  const date = rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : undefined;
+  return date ? { board, date } : { board };
+}
 
 export const Route = createFileRoute("/l/$slug")({
-  loader: async ({ context, params }) => {
-    const listing = await context.queryClient.ensureQueryData(listingQuery(params.slug));
+  validateSearch: parseSearch,
+  loaderDeps: ({ search }) => ({ board: search.board, date: search.date }),
+  loader: async ({ context, params, deps }) => {
+    const listing = await context.queryClient.ensureQueryData(
+      listingQuery(params.slug, deps.board, deps.date),
+    );
     if (!listing) throw notFound();
+    await context.queryClient.ensureQueryData(
+      boardQuery(listing.categorySlug, deps.board, deps.date),
+    );
     return { listing };
   },
+
   head: ({ loaderData, params }) => {
     if (!loaderData) {
       return {
