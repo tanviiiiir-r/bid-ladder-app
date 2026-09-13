@@ -27,12 +27,11 @@ export const Route = createFileRoute("/api/public/og/l/$slug")({
           .maybeSingle();
 
         if (error || !row) {
-          // TEMP-PROBE
+          return new Response("Not found", { status: 404 });
         }
-        const rowSafe = (row ?? { name: "Probe", tagline: "probe tagline", rankings: null }) as typeof row;
 
         const ranking = (
-          rowSafe as unknown as {
+          row as unknown as {
             rankings: {
               rank: number;
               previous_rank: number | null;
@@ -94,8 +93,8 @@ export const Route = createFileRoute("/api/public/og/l/$slug")({
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-              <div style={{ display: "flex", fontSize: 68, fontWeight: 700 }}>{rowSafe!.name}</div>
-              <div style={{ display: "flex", fontSize: 34, color: "#cbd5e1" }}>{rowSafe!.tagline}</div>
+              <div style={{ display: "flex", fontSize: 68, fontWeight: 700 }}>{row.name}</div>
+              <div style={{ display: "flex", fontSize: 34, color: "#cbd5e1" }}>{row.tagline}</div>
               <div style={{ display: "flex", fontSize: 32, color: "#94a3b8" }}>
                 {`${uniqueViews} unique views \u00b7 ${shares} shares`}
               </div>
