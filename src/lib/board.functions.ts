@@ -2,6 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { createPublicSupabase } from "./supabase-public.server";
+import {
+  BOARDS,
+  RANKING,
+  type BoardKind,
+  costToClaimFirstCents,
+  costToOvertakeCents,
+  isBoardVisible,
+  utcDateString,
+} from "./ranking";
 
 export type BoardListing = {
   id: string;
@@ -19,9 +28,23 @@ export type BoardListing = {
   shares: number;
   /** When the persisted ranking row was last recomputed. */
   computedAt: string | null;
+  allocationCents: number;
+  costToOvertakeCents: number;
+  costToClaimFirstCents: number;
+  board: BoardKind;
+  isBoardVisible: boolean;
 };
 
-type Row = {
+type RankEmbed = {
+  rank: number;
+  previous_rank: number | null;
+  unique_views: number;
+  shares: number;
+  computed_at: string | null;
+  score?: number | null;
+} | null;
+
+type ListingRow = {
   id: string;
   slug: string;
   name: string;
@@ -29,20 +52,36 @@ type Row = {
   url: string;
   description: string;
   approved_at: string | null;
+  allocation_cents: number | null;
   categories: { name: string; slug: string } | null;
-  rankings: {
-    rank: number;
-    previous_rank: number | null;
-    unique_views: number;
-    shares: number;
-    computed_at: string | null;
-  } | null;
+  rankings?: RankEmbed;
+  today_rankings?: RankEmbed;
 };
 
-const SELECT =
-  "id, slug, name, tagline, url, description, approved_at, categories(name, slug), rankings(rank, previous_rank, unique_views, shares, computed_at)";
+const LISTING_SELECT =
+  "id, slug, name, tagline, url, description, approved_at, allocation_cents, categories(name, slug), rankings(rank, previous_rank, unique_views, shares, computed_at, score), today_rankings(rank, previous_rank, unique_views, shares, computed_at, score)";
 
-function toListing(row: Row): BoardListing {
+const boardInput = z.object({
+  category: z.string().optional(),
+  board: z.enum(BOARDS).optional(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+});
+
+function rankFrom(row: ListingRow, board: BoardKind): RankEmbed {
+  return board === "today" ? (row.today_rankings ?? null) : (row.rankings ?? null);
+}
+
+function allocationFrom(row: ListingRow, board: BoardKind, rank: RankEmbed): number {
+  if (board === "today" && rank?.score != null) return Number(rank.score);
+  return row.allocation_cents ?? 0;
+}
+
+function toListing(row: ListingRow, board: BoardKind): BoardListing {
+  const rank = rankFrom(row, board);
+  const allocationCents = allocationFrom(row, board, rank);
   return {
     id: row.id,
     slug: row.slug,
@@ -53,17 +92,44 @@ function toListing(row: Row): BoardListing {
     approvedAt: row.approved_at,
     categoryName: row.categories?.name ?? "—",
     categorySlug: row.categories?.slug ?? "",
-    rank: row.rankings?.rank ?? null,
-    previousRank: row.rankings?.previous_rank ?? null,
-    uniqueViews: row.rankings?.unique_views ?? 0,
-    shares: row.rankings?.shares ?? 0,
-    computedAt: row.rankings?.computed_at ?? null,
+    rank: rank?.rank ?? null,
+    previousRank: rank?.previous_rank ?? null,
+    uniqueViews: rank?.unique_views ?? 0,
+    shares: rank?.shares ?? 0,
+    computedAt: rank?.computed_at ?? null,
+    allocationCents,
+    costToOvertakeCents: 0,
+    costToClaimFirstCents: 0,
+    board,
+    isBoardVisible: isBoardVisible(allocationCents) && rank != null,
   };
+}
+
+function withCosts(listings: BoardListing[]): BoardListing[] {
+  const first = listings[0];
+  const firstAllocation = first?.allocationCents ?? null;
+  return listings.map((row, index) => {
+    const above = index > 0 ? listings[index - 1] : undefined;
+    return {
+      ...row,
+      costToClaimFirstCents: costToClaimFirstCents(firstAllocation, row.rank === 1),
+      costToOvertakeCents: costToOvertakeCents(
+        row.allocationCents,
+        above?.allocationCents ?? null,
+        above?.rank === 1,
+      ),
+    };
+  });
+}
+
+function matchesCategory(row: { categories: { slug: string } | null }, category?: string) {
+  if (!category || category === "all") return true;
+  return row.categories?.slug === category;
 }
 
 /**
  * Public reads are detached from ranking recompute: they only read persisted
- * rankings. Recompute is server-only — a scheduled database job plus the
+ * rankings. Recompute is server-only — allocation mutations plus the
  * admin approve/reject path. Never triggered by a public GET.
  */
 
@@ -73,6 +139,7 @@ export const getCategories = createServerFn({ method: "GET" }).handler(async () 
     const { data, error } = await supabase
       .from("categories")
       .select("id, slug, name")
+      .eq("status", "active")
       .order("sort_order");
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -83,43 +150,157 @@ export const getCategories = createServerFn({ method: "GET" }).handler(async () 
   }
 });
 
+export const getDailyArchiveDates = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = createPublicSupabase();
+  const { data, error } = await supabase
+    .from("daily_rank_snapshots")
+    .select("utc_date")
+    .order("utc_date", { ascending: false })
+    .limit(400);
+  if (error) throw new Error(error.message);
+  const dates = [...new Set((data ?? []).map((row) => row.utc_date))];
+  return dates;
+});
+
+async function loadLiveBoard(
+  board: Exclude<BoardKind, "daily">,
+  category?: string,
+): Promise<BoardListing[]> {
+  const supabase = createPublicSupabase();
+  let query = supabase.from("listings").select(LISTING_SELECT).eq("status", "approved");
+  if (category && category !== "all") {
+    query = query.eq("categories.slug", category);
+  }
+
+  const { data: rows, error } = await query.limit(400);
+  if (error) {
+    console.error("[board] read failed", error.message);
+    throw new Error("The board couldn't load right now. Please retry.");
+  }
+
+  return withCosts(
+    ((rows ?? []) as unknown as ListingRow[])
+      .filter((row) => matchesCategory(row, category))
+      .map((row) => toListing(row, board))
+      .filter((row) => row.isBoardVisible)
+      .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999)),
+  );
+}
+
+async function loadDailyArchive(date: string, category?: string): Promise<BoardListing[]> {
+  const supabase = createPublicSupabase();
+  const { data: rows, error } = await supabase
+    .from("daily_rank_snapshots")
+    .select(
+      "utc_date, rank, allocation_cents, unique_views, shares, frozen_at, listings!inner(id, slug, name, tagline, url, description, approved_at, allocation_cents, status, categories(name, slug))",
+    )
+    .eq("utc_date", date)
+    .eq("listings.status", "approved")
+    .order("rank", { ascending: true })
+    .limit(400);
+  if (error) {
+    console.error("[board] daily archive read failed", error.message);
+    throw new Error("The board couldn't load right now. Please retry.");
+  }
+
+  type SnapshotRow = {
+    rank: number;
+    allocation_cents: number;
+    unique_views: number;
+    shares: number;
+    frozen_at: string;
+    listings: ListingRow | ListingRow[] | null;
+  };
+
+  const listings = ((rows ?? []) as unknown as SnapshotRow[])
+    .map((row) => {
+      const listing = Array.isArray(row.listings) ? row.listings[0] : row.listings;
+      if (!listing) return null;
+      if (!matchesCategory(listing, category)) return null;
+      return {
+        id: listing.id,
+        slug: listing.slug,
+        name: listing.name,
+        tagline: listing.tagline,
+        url: listing.url,
+        description: listing.description,
+        approvedAt: listing.approved_at,
+        categoryName: listing.categories?.name ?? "—",
+        categorySlug: listing.categories?.slug ?? "",
+        rank: row.rank,
+        previousRank: null,
+        uniqueViews: row.unique_views,
+        shares: row.shares,
+        computedAt: row.frozen_at,
+        allocationCents: row.allocation_cents,
+        costToOvertakeCents: 0,
+        costToClaimFirstCents: 0,
+        board: "daily" as const,
+        isBoardVisible: true,
+      };
+    })
+    .filter((row) => row != null);
+
+  return withCosts(listings);
+}
+
 export const getBoard = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) =>
-    z.object({ category: z.string().optional() }).parse(data ?? {}),
-  )
+  .inputValidator((data: unknown) => boardInput.parse(data ?? {}))
   .handler(async ({ data }): Promise<BoardListing[]> => {
-    const supabase = createPublicSupabase();
-    let query = supabase.from("listings").select(SELECT).eq("status", "approved");
-    if (data.category && data.category !== "all") {
-      query = query.eq("categories.slug", data.category);
+    const board = data.board ?? "all_time";
+    const today = utcDateString();
+    if (board === "daily") {
+      const date = data.date ?? today;
+      if (date === today) return loadLiveBoard("today", data.category);
+      return loadDailyArchive(date, data.category);
     }
-
-    const { data: rows, error } = await query.limit(200);
-    // A read failure must never look like an empty ladder: surface it so the
-    // route error boundary can offer a retry instead of showing "no listings".
-    if (error) {
-      console.error("[board] read failed", error.message);
-      throw new Error("The board couldn't load right now. Please retry.");
-    }
-
-    return ((rows ?? []) as unknown as Row[])
-      .filter((row) => (data.category && data.category !== "all" ? row.categories : true))
-      .map(toListing)
-      .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
+    return loadLiveBoard(board, data.category);
   });
 
 export const getListing = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) => z.object({ slug: z.string().min(1) }).parse(data))
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        slug: z.string().min(1),
+        board: z.enum(BOARDS).optional(),
+        date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+      })
+      .parse(data),
+  )
   .handler(async ({ data }): Promise<BoardListing | null> => {
+    const board = data.board ?? "all_time";
     const supabase = createPublicSupabase();
     const { data: row, error } = await supabase
       .from("listings")
-      .select(SELECT)
+      .select(LISTING_SELECT)
       .eq("status", "approved")
       .eq("slug", data.slug)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return row ? toListing(row as unknown as Row) : null;
+    if (!row) return null;
+
+    const listing = toListing(row as unknown as ListingRow, board === "daily" ? "all_time" : board);
+    const peers = await getBoard({
+      data: { board, category: listing.categorySlug, date: data.date },
+    });
+    const onBoard = peers.find((peer) => peer.id === listing.id);
+    if (onBoard) return onBoard;
+
+    const first = peers[0];
+    return {
+      ...listing,
+      board,
+      isBoardVisible: false,
+      rank: null,
+      previousRank: null,
+      costToClaimFirstCents: costToClaimFirstCents(first?.allocationCents ?? null, false),
+      costToOvertakeCents: isBoardVisible(listing.allocationCents)
+        ? costToOvertakeCents(listing.allocationCents, first?.allocationCents ?? null, true)
+        : Math.max(0, RANKING.minVisibleCents - listing.allocationCents),
+    };
   });
 
 const VISITOR_COOKIE = "bl_vid";
