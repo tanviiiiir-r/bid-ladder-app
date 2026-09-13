@@ -24,7 +24,6 @@ function parseSearch(search: Record<string, unknown>): ListingSearch {
   return date ? { board, date } : { board };
 }
 
-
 export const Route = createFileRoute("/l/$slug")({
   validateSearch: parseSearch,
   loaderDeps: ({ search }) => ({ board: search.board, date: search.date }),
