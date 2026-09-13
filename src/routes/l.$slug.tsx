@@ -35,7 +35,9 @@ export const Route = createFileRoute("/l/$slug")({
     const url = `https://rising-star-board.lovable.app/l/${params.slug}`;
     // Versioned by real rank + recompute time so a cached card can never claim
     // a rank the database has already moved past.
-    const version = encodeURIComponent(`${listing.rank ?? "na"}-${listing.computedAt ?? "pending"}`);
+    const version = encodeURIComponent(
+      `${listing.rank ?? "na"}-${listing.computedAt ?? "pending"}`,
+    );
     const image = `https://rising-star-board.lovable.app/api/public/og/l/${params.slug}?v=${version}`;
     return {
       meta: [

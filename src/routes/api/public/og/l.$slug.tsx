@@ -64,48 +64,46 @@ export const Route = createFileRoute("/api/public/og/l/$slug")({
         const { ImageResponse } = await import("@cf-wasm/og");
 
         return new ImageResponse(
-          (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                width: "1200px",
-                height: "630px",
-                padding: "64px",
-                backgroundColor: "#0b1120",
-                color: "#f8fafc",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", fontSize: 30, color: "#fbbf24", letterSpacing: 2 }}>
-                  BID LADDER
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              width: "1200px",
+              height: "630px",
+              padding: "64px",
+              backgroundColor: "#0b1120",
+              color: "#f8fafc",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", fontSize: 30, color: "#fbbf24", letterSpacing: 2 }}>
+                BID LADDER
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                <div style={{ display: "flex", fontSize: 64, fontWeight: 700, color: "#fbbf24" }}>
+                  {rank == null ? "Rank pending" : `#${rank}`}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                  <div style={{ display: "flex", fontSize: 64, fontWeight: 700, color: "#fbbf24" }}>
-                    {rank == null ? "Rank pending" : `#${rank}`}
+                {movementLabel ? (
+                  <div style={{ display: "flex", fontSize: 34, color: movementColor }}>
+                    {movementLabel}
                   </div>
-                  {movementLabel ? (
-                    <div style={{ display: "flex", fontSize: 34, color: movementColor }}>
-                      {movementLabel}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-                <div style={{ display: "flex", fontSize: 68, fontWeight: 700 }}>{row.name}</div>
-                <div style={{ display: "flex", fontSize: 34, color: "#cbd5e1" }}>{row.tagline}</div>
-                <div style={{ display: "flex", fontSize: 32, color: "#94a3b8" }}>
-                  {`${uniqueViews} unique views \u00b7 ${shares} shares`}
-                </div>
-              </div>
-
-              <div style={{ display: "flex", fontSize: 26, color: "#94a3b8" }}>
-                Real attention only · money never buys organic position
+                ) : null}
               </div>
             </div>
-          ),
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+              <div style={{ display: "flex", fontSize: 68, fontWeight: 700 }}>{row.name}</div>
+              <div style={{ display: "flex", fontSize: 34, color: "#cbd5e1" }}>{row.tagline}</div>
+              <div style={{ display: "flex", fontSize: 32, color: "#94a3b8" }}>
+                {`${uniqueViews} unique views \u00b7 ${shares} shares`}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", fontSize: 26, color: "#94a3b8" }}>
+              Real attention only · money never buys organic position
+            </div>
+          </div>,
           {
             width: 1200,
             height: 630,
