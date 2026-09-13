@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "A live leaderboard of early-stage AI, SaaS and tools, ranked by real attention only.",
+          "A live board of early-stage AI, SaaS and tools. Credits allocated to a listing determine its rank.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
