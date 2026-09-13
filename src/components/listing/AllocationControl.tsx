@@ -17,9 +17,7 @@ export function AllocationControl({
   allocationCents: number;
   availableCents: number;
 }) {
-  const [draftCents, setDraftCents] = useState(
-    Math.max(allocationCents, RANKING.minVisibleCents),
-  );
+  const [draftCents, setDraftCents] = useState(Math.max(allocationCents, RANKING.minVisibleCents));
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -62,7 +60,12 @@ export function AllocationControl({
         >
           <Plus className="size-4" />
         </Button>
-        <Button type="button" size="sm" disabled={!canSave} onClick={() => mutation.mutate(draftCents)}>
+        <Button
+          type="button"
+          size="sm"
+          disabled={!canSave}
+          onClick={() => mutation.mutate(draftCents)}
+        >
           {mutation.isPending ? "Saving…" : "Set allocation"}
         </Button>
         {allocationCents > 0 ? (

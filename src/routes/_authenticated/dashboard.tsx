@@ -51,8 +51,8 @@ function ClimbPanel({
               <>You hold #1. Others must beat your allocation to take it.</>
             ) : (
               <>
-                Add {formatCents(onBoardRow?.costToOvertakeCents ?? RANKING.incrementCents)} to reach
-                #{rank - 1}.
+                Add {formatCents(onBoardRow?.costToOvertakeCents ?? RANKING.incrementCents)} to
+                reach #{rank - 1}.
               </>
             )}
           </p>
@@ -91,7 +91,6 @@ function ClimbPanel({
     </div>
   );
 }
-
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -153,7 +152,6 @@ function DashboardPage() {
           </div>
         </section>
 
-
         <div className="mt-6 flex flex-col gap-3">
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
@@ -191,12 +189,7 @@ function DashboardPage() {
                     >
                       View on the board
                     </Link>
-                    <ClimbPanel
-                      listing={listing}
-                      board={board}
-                      availableCents={availableCents}
-                    />
-
+                    <ClimbPanel listing={listing} board={board} availableCents={availableCents} />
                   </>
                 ) : null}
               </article>
