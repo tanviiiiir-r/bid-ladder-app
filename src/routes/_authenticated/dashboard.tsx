@@ -117,6 +117,10 @@ function DashboardPage() {
     queryFn: () => getMyListings(),
   });
   const { data: admin } = useQuery({ queryKey: ["am-i-admin"], queryFn: () => amIAdmin() });
+  const { data: wallet } = useQuery({ queryKey: ["my-wallet"], queryFn: () => getMyWallet() });
+  const { data: board = [] } = useQuery(boardQuery("all", "all_time"));
+
+  const availableCents = wallet?.availableCents ?? 0;
 
   return (
     <div className="min-h-screen">
@@ -135,6 +139,20 @@ function DashboardPage() {
             </Button>
           </div>
         </div>
+
+        <section className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-card p-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Available</p>
+            <p className="rank-number text-xl font-semibold">{formatCents(availableCents)}</p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Committed</p>
+            <p className="rank-number text-xl font-semibold">
+              {formatCents(wallet?.committedCents ?? 0)}
+            </p>
+          </div>
+        </section>
+
 
         <div className="mt-6 flex flex-col gap-3">
           {isLoading ? (
