@@ -98,7 +98,9 @@ export const Route = createFileRoute("/l/$slug")({
 
 function ListingPage() {
   const { slug } = Route.useParams();
-  const { data } = useSuspenseQuery(listingQuery(slug));
+  const { board, date } = Route.useSearch();
+  const { data } = useSuspenseQuery(listingQuery(slug, board, date));
+
   const tracked = useRef(false);
 
   useEffect(() => {
