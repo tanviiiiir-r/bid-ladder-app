@@ -12,7 +12,7 @@ import { getMovement } from "@/lib/ranking";
  * Cache key: callers append ?v=<rank>-<computedAt> so a stale CDN copy can
  * never claim a better rank than the database currently holds. TTL stays short.
  */
-export const Route = createFileRoute("/api/public/og/l/$slug.png")({
+export const Route = createFileRoute("/api/public/og/l/$slug")({
   server: {
     handlers: {
       GET: async ({ params }) => {
