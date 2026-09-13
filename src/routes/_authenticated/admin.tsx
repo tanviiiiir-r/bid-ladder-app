@@ -7,12 +7,158 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  adminGrantCredits,
+  adminSetAllocation,
   getAuditLog,
   getReviewQueue,
   recomputeRankings,
   reviewListing,
 } from "@/lib/admin.functions";
+import { formatCents } from "@/lib/format";
+import { RANKING } from "@/lib/ranking";
 import { cn } from "@/lib/utils";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Dollar string → cents, or null when it isn't a clean amount. */
+function parseDollarsToCents(value: string): number | null {
+  const trimmed = value.trim().replace(/^\$/, "");
+  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) return null;
+  return Math.round(Number(trimmed) * 100);
+}
+
+function CreditTools() {
+  const queryClient = useQueryClient();
+  const [grantUserId, setGrantUserId] = useState("");
+  const [grantAmount, setGrantAmount] = useState("");
+  const [grantReason, setGrantReason] = useState("");
+  const [allocListingId, setAllocListingId] = useState("");
+  const [allocAmount, setAllocAmount] = useState("");
+
+  const grant = useMutation({
+    mutationFn: (input: { userId: string; cents: number; reason?: string }) =>
+      adminGrantCredits({ data: input }),
+    onSuccess: (_result, input) => {
+      toast.success(`Granted ${formatCents(input.cents)}`);
+      setGrantAmount("");
+      setGrantReason("");
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+      queryClient.invalidateQueries({ queryKey: ["my-wallet"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const allocate = useMutation({
+    mutationFn: (input: { listingId: string; newCents: number }) =>
+      adminSetAllocation({ data: input }),
+    onSuccess: (_result, input) => {
+      toast.success(
+        input.newCents === 0
+          ? "Allocation released — listing left the board"
+          : `Allocation set to ${formatCents(input.newCents)}`,
+      );
+      setAllocAmount("");
+      queryClient.invalidateQueries({ queryKey: ["board"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  function submitGrant() {
+    if (!UUID_RE.test(grantUserId.trim())) {
+      toast.error("Enter a valid user id (uuid)");
+      return;
+    }
+    const cents = parseDollarsToCents(grantAmount);
+    if (cents == null || cents <= 0 || cents % RANKING.incrementCents !== 0) {
+      toast.error(`Amount must be a positive multiple of ${formatCents(RANKING.incrementCents)}`);
+      return;
+    }
+    const reason = grantReason.trim();
+    grant.mutate({ userId: grantUserId.trim(), cents, ...(reason ? { reason } : {}) });
+  }
+
+  function submitAllocation() {
+    if (!UUID_RE.test(allocListingId.trim())) {
+      toast.error("Enter a valid listing id (uuid)");
+      return;
+    }
+    const cents = parseDollarsToCents(allocAmount);
+    if (cents == null) {
+      toast.error("Enter an amount in dollars");
+      return;
+    }
+    if (cents !== 0) {
+      if (cents % RANKING.incrementCents !== 0) {
+        toast.error(`Use steps of ${formatCents(RANKING.incrementCents)}`);
+        return;
+      }
+      if (cents < RANKING.minVisibleCents) {
+        toast.error(
+          `Use 0 to leave the board, or at least ${formatCents(RANKING.minVisibleCents)}`,
+        );
+        return;
+      }
+    }
+    allocate.mutate({ listingId: allocListingId.trim(), newCents: cents });
+  }
+
+  return (
+    <section className="mt-8 grid gap-3 sm:grid-cols-2">
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h2 className="font-display text-sm font-semibold">Grant credits</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Positive multiples of {formatCents(RANKING.incrementCents)}. Logged to the credit ledger.
+        </p>
+        <div className="mt-3 flex flex-col gap-2">
+          <Input
+            placeholder="User id (uuid)"
+            value={grantUserId}
+            onChange={(event) => setGrantUserId(event.target.value)}
+          />
+          <Input
+            placeholder="Amount in dollars, e.g. 25"
+            inputMode="decimal"
+            value={grantAmount}
+            onChange={(event) => setGrantAmount(event.target.value)}
+          />
+          <Input
+            placeholder="Reason (optional)"
+            value={grantReason}
+            onChange={(event) => setGrantReason(event.target.value)}
+          />
+          <Button size="sm" onClick={submitGrant} disabled={grant.isPending}>
+            {grant.isPending ? "Granting…" : "Grant credits"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h2 className="font-display text-sm font-semibold">Set allocation</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          0 leaves the board. Otherwise at least {formatCents(RANKING.minVisibleCents)} in{" "}
+          {formatCents(RANKING.incrementCents)} steps.
+        </p>
+        <div className="mt-3 flex flex-col gap-2">
+          <Input
+            placeholder="Listing id (uuid)"
+            value={allocListingId}
+            onChange={(event) => setAllocListingId(event.target.value)}
+          />
+          <Input
+            placeholder="New amount in dollars, e.g. 40"
+            inputMode="decimal"
+            value={allocAmount}
+            onChange={(event) => setAllocAmount(event.target.value)}
+          />
+          <Button size="sm" onClick={submitAllocation} disabled={allocate.isPending}>
+            {allocate.isPending ? "Saving…" : "Set allocation"}
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -96,6 +242,8 @@ function AdminPage() {
             Recompute rankings
           </Button>
         </div>
+
+        <CreditTools />
 
         <h2 className="mt-8 font-display text-sm uppercase tracking-wide text-muted-foreground">
           Pending ({pending.length})
