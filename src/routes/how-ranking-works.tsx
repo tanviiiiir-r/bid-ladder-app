@@ -49,7 +49,7 @@ function HowRankingWorksPage() {
         <section className="mt-8 rounded-xl border border-border bg-card p-5">
           <h2 className="font-display text-lg font-semibold">The formula</h2>
           <pre className="mt-3 overflow-x-auto rounded-lg bg-surface p-4 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-{`freshness_days = max(0, ${RANKING.freshnessWindowDays} − days_since_approval)
+            {`freshness_days = max(0, ${RANKING.freshnessWindowDays} − days_since_approval)
 score = unique_views × ${RANKING.viewWeight}
       + shares × ${RANKING.shareWeight}
       + freshness_days × ${RANKING.freshnessWeight}

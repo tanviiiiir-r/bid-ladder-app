@@ -115,8 +115,8 @@ function BoardPage() {
           {listings.length > 0 && listings.length <= 3 ? (
             <p className="mt-5 rounded-lg border border-border bg-surface/60 px-3 py-2 text-xs text-muted-foreground">
               Early board: only {listings.length} approved{" "}
-              {listings.length === 1 ? "listing" : "listings"} here so far. Positions move fast — and
-              we don't seed fake popularity.
+              {listings.length === 1 ? "listing" : "listings"} here so far. Positions move fast —
+              and we don't seed fake popularity.
             </p>
           ) : null}
 
@@ -149,7 +149,10 @@ function BoardPage() {
           <p className="mt-8 text-center text-xs text-muted-foreground">
             Movement (↑/↓) compares each listing to the previous ranking recompute. Money never buys
             organic position —{" "}
-            <Link to="/how-ranking-works" className="text-primary underline-offset-2 hover:underline">
+            <Link
+              to="/how-ranking-works"
+              className="text-primary underline-offset-2 hover:underline"
+            >
               see how ranking works
             </Link>
             .

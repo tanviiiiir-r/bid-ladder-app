@@ -148,9 +148,10 @@ async function resolveVisitorKey(): Promise<{ key: string; setCookie: string | n
   const salt = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? process.env["SUPABASE_URL"] ?? "bl";
   const key = createHash("sha256").update(`${salt}:${raw}`).digest("hex").slice(0, 40);
 
-  const setCookie = existing === raw
-    ? null
-    : `${VISITOR_COOKIE}=${raw}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax; Secure`;
+  const setCookie =
+    existing === raw
+      ? null
+      : `${VISITOR_COOKIE}=${raw}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax; Secure`;
 
   return { key, setCookie };
 }
