@@ -100,6 +100,9 @@ function ListingPage() {
   const { slug } = Route.useParams();
   const { board, date } = Route.useSearch();
   const { data } = useSuspenseQuery(listingQuery(slug, board, date));
+  const { data: peers } = useSuspenseQuery(
+    boardQuery(data?.categorySlug ?? "all", board, date),
+  );
 
   const tracked = useRef(false);
 
@@ -128,6 +131,16 @@ function ListingPage() {
     }
   }
 
+  const boardLabel =
+    board === "today" ? "Today" : board === "daily" ? `Daily${date ? ` ${date}` : ""}` : "All-time";
+  const onBoard = data.isBoardVisible && data.rank != null;
+  const above = data.rank != null ? peers.find((peer) => peer.rank === data.rank! - 1) : undefined;
+  const overtakeCents = data.costToOvertakeCents;
+  // Rank someone lands on if they pay the overtake cost: one step above, or #1
+  // when the listing being passed is already the leader.
+  const resultingRank = data.rank == null ? null : Math.max(1, data.rank - 1);
+  const shortfallCents = Math.max(0, RANKING.minVisibleCents - data.allocationCents);
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -140,7 +153,6 @@ function ListingPage() {
           Board
         </Link>
 
-        {/* Share card: rank + movement */}
         <section className="board-grid-bg mt-4 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -150,13 +162,57 @@ function ListingPage() {
               <h1 className="mt-3 truncate text-2xl font-bold sm:text-3xl">{data.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground">{data.tagline}</p>
             </div>
-            <div className="flex shrink-0 flex-col items-center gap-2">
-              <span className="rank-number text-4xl font-bold text-primary">
-                #{data.rank ?? "—"}
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <span className="rank-number text-3xl font-bold text-foreground sm:text-4xl">
+                {formatCents(data.allocationCents)}
               </span>
-              <MovementBadge rank={data.rank} previousRank={data.previousRank} />
+              <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                allocated
+              </span>
+              {onBoard ? (
+                <div className="flex items-center gap-2">
+                  <span className="rank-number text-lg font-semibold text-primary">
+                    #{data.rank}
+                  </span>
+                  <MovementBadge rank={data.rank} previousRank={data.previousRank} />
+                </div>
+              ) : null}
             </div>
           </div>
+
+          {onBoard ? (
+            <div className="mt-5 rounded-xl border border-border bg-surface p-4">
+              <p className="text-sm font-medium text-foreground">
+                Anyone can take this rank for {formatCents(overtakeCents)} on the {data.categoryName}{" "}
+                board.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {boardLabel} board · paying that lands them at #{resultingRank}
+                {above ? ` (currently ${above.name} at ${formatCents(above.allocationCents)})` : ""}.
+                {data.rank === 1
+                  ? ` Claiming #1 costs ${formatCents(data.costToClaimFirstCents)}.`
+                  : ""}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-5 rounded-xl border border-border bg-surface p-4">
+              <p className="text-sm font-medium text-foreground">
+                Not on the public {boardLabel} board yet.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                A listing appears once its allocation reaches{" "}
+                {formatCents(RANKING.minVisibleCents)}
+                {shortfallCents > 0 ? ` — ${formatCents(shortfallCents)} to go` : ""}. Claiming #1 on
+                this board costs {formatCents(data.costToClaimFirstCents)}.
+              </p>
+              <Button asChild variant="secondary" size="sm" className="mt-3">
+                <Link to="/dashboard">
+                  <TrendingUp className="size-4" />
+                  Allocate credits
+                </Link>
+              </Button>
+            </div>
+          )}
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Button asChild>
@@ -172,17 +228,6 @@ function ListingPage() {
           </div>
         </section>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-surface p-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Unique views</p>
-            <p className="rank-number mt-1 text-2xl font-semibold">{data.uniqueViews}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-surface p-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Shares</p>
-            <p className="rank-number mt-1 text-2xl font-semibold">{data.shares}</p>
-          </div>
-        </div>
-
         <section className="mt-6 rounded-xl border border-border bg-card p-5">
           <h2 className="font-display text-lg font-semibold">About</h2>
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
@@ -190,15 +235,26 @@ function ListingPage() {
           </p>
         </section>
 
-        <p className="mt-6 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-          <Eye className="size-3.5" />
-          Rank comes from real attention only: unique views, shares and freshness. Money never buys
-          organic position —{" "}
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground/70">
+          <span className="inline-flex items-center gap-1">
+            <Eye className="size-3" />
+            {data.uniqueViews} unique views
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Share2 className="size-3" />
+            {data.shares} shares
+          </span>
+          <span>watch-only — these do not affect rank</span>
+        </div>
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          Credits allocated to a listing determine its rank —{" "}
           <Link to="/how-ranking-works" className="text-primary underline-offset-2 hover:underline">
             how ranking works
           </Link>
           .
         </p>
+
       </main>
     </div>
   );
