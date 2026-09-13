@@ -14,6 +14,7 @@ export default tseslint.config(
       "src/routeTree.gen.ts",
       // Generated Supabase client artifacts — never hand-edited.
       "src/integrations/supabase/types.ts",
+      "src/integrations/supabase/previewAuthStorage.ts",
     ],
   },
   {
