@@ -12,17 +12,18 @@ import { formatCents } from "@/lib/format";
 import { boardQuery, listingQuery } from "@/lib/queries";
 import { BOARDS, RANKING, type BoardKind } from "@/lib/ranking";
 
-type ListingSearch = { board: BoardKind; date?: string };
+type ListingSearch = { board?: BoardKind; date?: string };
 
 function parseSearch(search: Record<string, unknown>): ListingSearch {
-  const rawBoard = String(search.board ?? "all_time");
+  const rawBoard = String(search["board"] ?? "all_time");
   const board = (BOARDS as readonly string[]).includes(rawBoard)
     ? (rawBoard as BoardKind)
     : "all_time";
-  const rawDate = typeof search.date === "string" ? search.date : undefined;
+  const rawDate = typeof search["date"] === "string" ? search["date"] : undefined;
   const date = rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : undefined;
   return date ? { board, date } : { board };
 }
+
 
 export const Route = createFileRoute("/l/$slug")({
   validateSearch: parseSearch,
