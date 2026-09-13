@@ -3,7 +3,9 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function assertAdmin(context: { supabase: any; userId: string }) {
+type AuthedContext = { supabase: SupabaseClient<Database>; userId: string };
+
+async function assertAdmin(context: AuthedContext) {
   const { data, error } = await context.supabase
     .from("user_roles")
     .select("role")

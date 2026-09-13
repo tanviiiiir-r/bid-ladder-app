@@ -10,6 +10,8 @@ import { getMyListings } from "@/lib/listings.functions";
 import { RANKING } from "@/lib/ranking";
 import { cn } from "@/lib/utils";
 
+type MyListing = Awaited<ReturnType<typeof getMyListings>>[number];
+
 function freshnessDaysLeft(approvedAt: string | null, createdAt: string | null) {
   const start = approvedAt ?? createdAt;
   if (!start) return null;
@@ -18,7 +20,7 @@ function freshnessDaysLeft(approvedAt: string | null, createdAt: string | null) 
 }
 
 /** Honest climb coaching: real observed counts and the documented levers only. */
-function ClimbPanel({ listing }: { listing: any }) {
+function ClimbPanel({ listing }: { listing: MyListing }) {
   const ranking = listing.rankings ?? null;
   const rank: number | null = ranking?.rank ?? null;
   const previousRank: number | null = ranking?.previous_rank ?? null;
@@ -122,7 +124,7 @@ function DashboardPage() {
               You haven't submitted anything yet.
             </div>
           ) : (
-            listings.map((listing: any) => (
+            listings.map((listing: MyListing) => (
               <article key={listing.id} className="rounded-xl border border-border bg-card p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-display text-base font-semibold">{listing.name}</h2>

@@ -26,6 +26,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
+type QueueListing = Awaited<ReturnType<typeof getReviewQueue>>[number];
+type AuditEntry = Awaited<ReturnType<typeof getAuditLog>>[number];
+
 const statusStyles: Record<string, string> = {
   pending: "bg-primary/15 text-primary",
   approved: "bg-rise/15 text-rise",
@@ -74,7 +77,7 @@ function AdminPage() {
     );
   }
 
-  const listings = (queue.data ?? []) as any[];
+  const listings: QueueListing[] = queue.data ?? [];
   const pending = listings.filter((listing) => listing.status === "pending");
   const decided = listings.filter((listing) => listing.status !== "pending");
 
@@ -194,7 +197,7 @@ function AdminPage() {
           Audit log
         </h2>
         <div className="mt-3 flex flex-col gap-1.5">
-          {(audit.data ?? []).map((entry: any) => (
+          {(audit.data ?? []).map((entry: AuditEntry) => (
             <div key={entry.id} className="text-xs text-muted-foreground">
               <span className="rank-number">{new Date(entry.created_at).toLocaleString()}</span> ·{" "}
               <span className="capitalize text-foreground">{entry.action}</span>
