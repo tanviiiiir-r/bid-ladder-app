@@ -10,7 +10,6 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "bun test src/lib",
     "format": "prettier --write ."
   },
   "overrides": {

@@ -552,7 +552,7 @@ EXCEPTION
   WHEN undefined_object THEN NULL;
 END $$;
 
-DO $$
+DO $do$
 BEGIN
   PERFORM cron.schedule(
     'freeze-daily-board',
@@ -562,4 +562,4 @@ BEGIN
 EXCEPTION
   WHEN undefined_function THEN NULL;
   WHEN undefined_object THEN NULL;
-END $$;
+END $do$;

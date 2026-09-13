@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getBoard, getCategories, getDailyArchiveDates, getListing } from "./board.functions";
-import type { BoardKind } from "./ranking";
+import { getBoard, getCategories, getListing } from "./board.functions";
 
 export const categoriesQuery = () =>
   queryOptions({
@@ -10,21 +9,14 @@ export const categoriesQuery = () =>
     staleTime: 5 * 60 * 1000,
   });
 
-export const boardQuery = (category: string, board: BoardKind = "all_time", date?: string) =>
+export const boardQuery = (category: string) =>
   queryOptions({
-    queryKey: ["board", category, board, date ?? null],
-    queryFn: () => getBoard({ data: { category, board, ...(date ? { date } : {}) } }),
+    queryKey: ["board", category],
+    queryFn: () => getBoard({ data: { category } }),
   });
 
-export const listingQuery = (slug: string, board: BoardKind = "all_time", date?: string) =>
+export const listingQuery = (slug: string) =>
   queryOptions({
-    queryKey: ["listing", slug, board, date ?? null],
-    queryFn: () => getListing({ data: { slug, board, ...(date ? { date } : {}) } }),
-  });
-
-export const dailyArchiveDatesQuery = () =>
-  queryOptions({
-    queryKey: ["daily-archive-dates"],
-    queryFn: () => getDailyArchiveDates(),
-    staleTime: 60 * 1000,
+    queryKey: ["listing", slug],
+    queryFn: () => getListing({ data: { slug } }),
   });
