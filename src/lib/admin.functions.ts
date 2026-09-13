@@ -114,3 +114,71 @@ export const recomputeRankings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const adminGrantCredits = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        cents: z.number().int().positive(),
+        reason: z.string().trim().max(300).optional(),
+        idempotencyKey: z.string().trim().min(8).max(80).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: result, error } = await supabaseAdmin.rpc("admin_grant_credits", {
+      _user_id: data.userId,
+      _cents: data.cents,
+      ...(data.reason ? { _reason: data.reason } : {}),
+      ...(data.idempotencyKey ? { _idempotency_key: data.idempotencyKey } : {}),
+    });
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
+export const adminSetAllocation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        listingId: z.string().uuid(),
+        newCents: z.number().int().nonnegative(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: result, error } = await supabaseAdmin.rpc("set_allocation", {
+      _listing_id: data.listingId,
+      _new_cents: data.newCents,
+    });
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
+export const freezeDailyBoard = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        utcDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+      })
+      .parse(data ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = data.utcDate
+      ? await supabaseAdmin.rpc("freeze_daily_board", { _utc_date: data.utcDate })
+      : await supabaseAdmin.rpc("freeze_daily_board");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
