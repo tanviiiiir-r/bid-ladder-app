@@ -243,6 +243,8 @@ function AdminPage() {
           </Button>
         </div>
 
+        <CreditTools />
+
         <h2 className="mt-8 font-display text-sm uppercase tracking-wide text-muted-foreground">
           Pending ({pending.length})
         </h2>
