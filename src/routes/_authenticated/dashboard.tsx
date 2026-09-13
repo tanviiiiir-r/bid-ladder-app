@@ -191,7 +191,12 @@ function DashboardPage() {
                     >
                       View on the board
                     </Link>
-                    <ClimbPanel listing={listing} />
+                    <ClimbPanel
+                      listing={listing}
+                      board={board}
+                      availableCents={availableCents}
+                    />
+
                   </>
                 ) : null}
               </article>
