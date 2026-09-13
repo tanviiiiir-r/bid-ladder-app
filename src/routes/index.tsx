@@ -1,9 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Flame, Scale } from "lucide-react";
 
 import { CategoryFilter } from "@/components/board/CategoryFilter";
 import { ListingCard } from "@/components/board/ListingCard";
+import { RanksFreshness } from "@/components/board/RanksFreshness";
 import { RisingStrip } from "@/components/board/RisingStrip";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
@@ -36,18 +37,33 @@ export const Route = createFileRoute("/")({
     ],
   }),
   component: BoardPage,
-  errorComponent: ({ error }) => (
-    <div className="mx-auto max-w-5xl px-4 py-16 text-center" role="alert">
-      <h1 className="font-display text-xl font-semibold">The board couldn't load</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
-    </div>
-  ),
+  errorComponent: BoardError,
   notFoundComponent: () => (
     <div className="mx-auto max-w-5xl px-4 py-16 text-center text-muted-foreground">
       Nothing on the board yet.
     </div>
   ),
 });
+
+function BoardError({ error }: { error: Error }) {
+  const router = useRouter();
+  return (
+    <div className="min-h-screen">
+      <SiteHeader />
+      <main className="board-grid-bg">
+        <div className="mx-auto max-w-5xl px-4 py-16 text-center" role="alert">
+          <h1 className="font-display text-xl font-semibold">The board couldn't load</h1>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+            {error.message} This is a loading problem, not an empty board — no listings were lost.
+          </p>
+          <Button className="mt-5" onClick={() => void router.invalidate()}>
+            Retry
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
+}
 
 function BoardPage() {
   const { category = "all" } = Route.useSearch();
@@ -81,6 +97,7 @@ function BoardPage() {
               <Scale className="size-3.5" />
               How ranking works — money never buys organic position
             </Link>
+            <RanksFreshness listings={listings} />
           </div>
 
           <RisingStrip listings={listings} />
