@@ -1,9 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Flame, Scale } from "lucide-react";
 
 import { CategoryFilter } from "@/components/board/CategoryFilter";
 import { ListingCard } from "@/components/board/ListingCard";
+import { RanksFreshness } from "@/components/board/RanksFreshness";
 import { RisingStrip } from "@/components/board/RisingStrip";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
