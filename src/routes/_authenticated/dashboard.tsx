@@ -1,74 +1,89 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Clock3, Eye, Share2 } from "lucide-react";
+import { Eye, Share2 } from "lucide-react";
 
+import { AllocationControl } from "@/components/listing/AllocationControl";
 import { MovementBadge } from "@/components/MovementBadge";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { amIAdmin } from "@/lib/admin.functions";
+import { getMyWallet } from "@/lib/allocation.functions";
+import type { BoardListing } from "@/lib/board.functions";
+import { formatCents } from "@/lib/format";
 import { getMyListings } from "@/lib/listings.functions";
-import { RANKING } from "@/lib/ranking";
+import { boardQuery } from "@/lib/queries";
+import { RANKING, isBoardVisible } from "@/lib/ranking";
 import { cn } from "@/lib/utils";
 
 type MyListing = Awaited<ReturnType<typeof getMyListings>>[number];
 
-function freshnessDaysLeft(approvedAt: string | null, createdAt: string | null) {
-  const start = approvedAt ?? createdAt;
-  if (!start) return null;
-  const days = (Date.now() - new Date(start).getTime()) / 86_400_000;
-  return Math.max(0, Math.round(RANKING.freshnessWindowDays - days));
-}
-
-/** Honest climb coaching: real observed counts and the documented levers only. */
-function ClimbPanel({ listing }: { listing: MyListing }) {
+/** Allocation coaching only: views, shares and freshness no longer affect rank. */
+function ClimbPanel({
+  listing,
+  board,
+  availableCents,
+}: {
+  listing: MyListing;
+  board: BoardListing[];
+  availableCents: number;
+}) {
+  const allocationCents = listing.allocation_cents ?? 0;
+  const onBoardRow = board.find((row) => row.id === listing.id) ?? null;
+  const rank = onBoardRow?.rank ?? null;
+  const onBoard = isBoardVisible(allocationCents) && rank != null;
   const ranking = listing.rankings ?? null;
-  const rank: number | null = ranking?.rank ?? null;
-  const previousRank: number | null = ranking?.previous_rank ?? null;
-  const daysLeft = freshnessDaysLeft(listing.approved_at ?? null, listing.created_at ?? null);
 
   return (
     <div className="mt-3 rounded-lg border border-border bg-surface/60 p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        {rank == null ? (
-          <span className="text-sm text-muted-foreground">Rank pending next recompute</span>
-        ) : (
-          <>
-            <span className="rank-number text-base font-semibold text-primary">#{rank}</span>
-            <MovementBadge rank={rank} previousRank={previousRank} />
-          </>
-        )}
-      </div>
-
-      <ul className="mt-3 flex flex-col gap-1.5 text-xs text-muted-foreground">
-        <li className="flex items-center gap-1.5">
-          <Eye className="size-3.5" />
-          Unique views (×{RANKING.viewWeight}):{" "}
-          {ranking ? (
-            <span className="text-foreground">{ranking.unique_views}</span>
-          ) : (
-            "not yet measured"
-          )}
-        </li>
-        <li className="flex items-center gap-1.5">
-          <Share2 className="size-3.5" />
-          Completed shares (×{RANKING.shareWeight}):{" "}
-          {ranking ? <span className="text-foreground">{ranking.shares}</span> : "not yet measured"}
-        </li>
-        <li className="flex items-center gap-1.5">
-          <Clock3 className="size-3.5" />
-          Freshness (×{RANKING.freshnessWeight} per day left):{" "}
-          {daysLeft == null ? (
-            "unknown"
-          ) : (
-            <span className="text-foreground">
-              {daysLeft} of {RANKING.freshnessWindowDays} days left
+      {onBoard ? (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rank-number text-base font-semibold text-primary">
+              You are #{rank}
             </span>
-          )}
-        </li>
-      </ul>
+            <MovementBadge rank={rank} previousRank={onBoardRow?.previousRank ?? null} />
+            <span className="text-sm text-muted-foreground">
+              {formatCents(allocationCents)} allocated
+            </span>
+          </div>
+          <p className="mt-2 text-sm">
+            {rank === 1 ? (
+              <>You hold #1. Others must beat your allocation to take it.</>
+            ) : (
+              <>
+                Add {formatCents(onBoardRow?.costToOvertakeCents ?? RANKING.incrementCents)} to reach
+                #{rank - 1}.
+              </>
+            )}
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="text-sm font-semibold">
+            Not on the board until you allocate {formatCents(RANKING.minVisibleCents)}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Currently allocated: {formatCents(allocationCents)}.
+          </p>
+        </>
+      )}
 
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        Those are the only levers. There is nothing to buy or boost.{" "}
+      <AllocationControl
+        listingId={listing.id}
+        allocationCents={allocationCents}
+        availableCents={availableCents}
+      />
+
+      <p className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Eye className="size-3.5" />
+          {ranking?.unique_views ?? 0}
+        </span>
+        <span className="flex items-center gap-1">
+          <Share2 className="size-3.5" />
+          {ranking?.shares ?? 0}
+        </span>
+        <span>watch-only · never affects rank</span>
         <Link to="/how-ranking-works" className="text-primary underline-offset-2 hover:underline">
           How ranking works
         </Link>
@@ -76,6 +91,7 @@ function ClimbPanel({ listing }: { listing: MyListing }) {
     </div>
   );
 }
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
