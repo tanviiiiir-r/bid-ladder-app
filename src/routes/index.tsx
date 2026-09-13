@@ -79,7 +79,6 @@ export const Route = createFileRoute("/")({
   ),
 });
 
-
 function BoardError({ error }: { error: Error }) {
   const router = useRouter();
   return (
@@ -187,8 +186,8 @@ function BoardPage() {
           {listings.length > 0 && listings.length <= 3 ? (
             <p className="mt-5 rounded-lg border border-border bg-surface/60 px-3 py-2 text-xs text-muted-foreground">
               Early board: only {listings.length} listed{" "}
-              {listings.length === 1 ? "product" : "products"} here so far. Positions move fast — and
-              we don't seed fake popularity.
+              {listings.length === 1 ? "product" : "products"} here so far. Positions move fast —
+              and we don't seed fake popularity.
             </p>
           ) : null}
 
@@ -234,4 +233,3 @@ function BoardPage() {
     </div>
   );
 }
-
