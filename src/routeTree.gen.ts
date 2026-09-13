@@ -17,6 +17,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedSubmitRouteImport } from './routes/_authenticated/submit'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
+import { Route as ApiPublicOgLSlugRouteImport } from './routes/api/public/og/l.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -57,6 +58,11 @@ const LSlugRoute = LSlugRouteImport.update({
   path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOgLSlugRoute = ApiPublicOgLSlugRouteImport.update({
+  id: '/api/public/og/l/$slug',
+  path: '/api/public/og/l/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/submit': typeof AuthenticatedSubmitRoute
   '/l/$slug': typeof LSlugRoute
+  '/api/public/og/l/$slug': typeof ApiPublicOgLSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/submit': typeof AuthenticatedSubmitRoute
   '/l/$slug': typeof LSlugRoute
+  '/api/public/og/l/$slug': typeof ApiPublicOgLSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/submit': typeof AuthenticatedSubmitRoute
   '/l/$slug': typeof LSlugRoute
+  '/api/public/og/l/$slug': typeof ApiPublicOgLSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/submit'
     | '/l/$slug'
+    | '/api/public/og/l/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/submit'
     | '/l/$slug'
+    | '/api/public/og/l/$slug'
   id:
     | '__root__'
     | '/'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/submit'
     | '/l/$slug'
+    | '/api/public/og/l/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -124,6 +136,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   HowRankingWorksRoute: typeof HowRankingWorksRoute
   LSlugRoute: typeof LSlugRoute
+  ApiPublicOgLSlugRoute: typeof ApiPublicOgLSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/og/l/$slug': {
+      id: '/api/public/og/l/$slug'
+      path: '/api/public/og/l/$slug'
+      fullPath: '/api/public/og/l/$slug'
+      preLoaderRoute: typeof ApiPublicOgLSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -208,6 +228,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   HowRankingWorksRoute: HowRankingWorksRoute,
   LSlugRoute: LSlugRoute,
+  ApiPublicOgLSlugRoute: ApiPublicOgLSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

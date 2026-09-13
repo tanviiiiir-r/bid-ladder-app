@@ -29,17 +29,22 @@ export const Route = createFileRoute("/l/$slug")({
     // Only observed facts: real persisted rank (omitted when absent) and real counts.
     const title =
       listing.rank == null
-        ? `${listing.name} — approved on Bid Ladder`
-        : `${listing.name} — rank #${listing.rank} on Bid Ladder`;
-    const stats = `${listing.uniqueViews} unique views · ${listing.shares} shares · ranked by real attention only`;
+        ? `${listing.name} — on Bid Ladder (rank pending)`
+        : `#${listing.rank} on Bid Ladder — ${listing.name}`;
+    const description = `${listing.tagline} · Unique views & shares only. Money never buys organic position.`;
     const url = `https://rising-star-board.lovable.app/l/${params.slug}`;
-    const image = "https://rising-star-board.lovable.app/og/bid-ladder-card.jpg";
+    // Versioned by real rank + recompute time so a cached card can never claim
+    // a rank the database has already moved past.
+    const version = encodeURIComponent(
+      `${listing.rank ?? "na"}-${listing.computedAt ?? "pending"}`,
+    );
+    const image = `https://rising-star-board.lovable.app/api/public/og/l/${params.slug}?v=${version}`;
     return {
       meta: [
         { title },
-        { name: "description", content: listing.tagline },
+        { name: "description", content: description },
         { property: "og:title", content: title },
-        { property: "og:description", content: `${listing.tagline} — ${stats}` },
+        { property: "og:description", content: description },
         { property: "og:type", content: "article" },
         { property: "og:url", content: url },
         { property: "og:image", content: image },
