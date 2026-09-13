@@ -99,7 +99,7 @@ export const Route = createFileRoute("/l/$slug")({
 
 function ListingPage() {
   const { slug } = Route.useParams();
-  const { board, date } = Route.useSearch();
+  const { board = "all_time", date } = Route.useSearch();
   const { data } = useSuspenseQuery(listingQuery(slug, board, date));
   const { data: peers } = useSuspenseQuery(boardQuery(data?.categorySlug ?? "all", board, date));
 
