@@ -139,9 +139,7 @@ function AdminPage() {
                     <Button
                       size="sm"
                       disabled={review.isPending}
-                      onClick={() =>
-                        review.mutate({ listingId: listing.id, action: "approve" })
-                      }
+                      onClick={() => review.mutate({ listingId: listing.id, action: "approve" })}
                     >
                       Approve
                     </Button>

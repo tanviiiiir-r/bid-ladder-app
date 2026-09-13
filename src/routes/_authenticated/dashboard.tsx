@@ -43,7 +43,11 @@ function ClimbPanel({ listing }: { listing: MyListing }) {
         <li className="flex items-center gap-1.5">
           <Eye className="size-3.5" />
           Unique views (×{RANKING.viewWeight}):{" "}
-          {ranking ? <span className="text-foreground">{ranking.unique_views}</span> : "not yet measured"}
+          {ranking ? (
+            <span className="text-foreground">{ranking.unique_views}</span>
+          ) : (
+            "not yet measured"
+          )}
         </li>
         <li className="flex items-center gap-1.5">
           <Share2 className="size-3.5" />

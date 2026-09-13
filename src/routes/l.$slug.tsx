@@ -19,7 +19,10 @@ export const Route = createFileRoute("/l/$slug")({
   head: ({ loaderData, params }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Listing unavailable — Bid Ladder" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Listing unavailable — Bid Ladder" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     }
     const { listing } = loaderData;
