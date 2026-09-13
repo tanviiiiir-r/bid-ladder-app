@@ -36,12 +36,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   component: BoardPage,
-  errorComponent: ({ error }) => (
-    <div className="mx-auto max-w-5xl px-4 py-16 text-center" role="alert">
-      <h1 className="font-display text-xl font-semibold">The board couldn't load</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
-    </div>
-  ),
+  errorComponent: BoardError,
   notFoundComponent: () => (
     <div className="mx-auto max-w-5xl px-4 py-16 text-center text-muted-foreground">
       Nothing on the board yet.
