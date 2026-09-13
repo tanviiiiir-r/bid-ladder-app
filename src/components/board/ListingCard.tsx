@@ -55,11 +55,17 @@ export function ListingCard({ listing }: { listing: BoardListing }) {
         ) : null}
 
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground/70">
-          <span className="inline-flex items-center gap-1" title="Watch-only — does not affect rank">
+          <span
+            className="inline-flex items-center gap-1"
+            title="Watch-only — does not affect rank"
+          >
             <Eye className="size-3" />
             {listing.uniqueViews}
           </span>
-          <span className="inline-flex items-center gap-1" title="Watch-only — does not affect rank">
+          <span
+            className="inline-flex items-center gap-1"
+            title="Watch-only — does not affect rank"
+          >
             <Share2 className="size-3" />
             {listing.shares}
           </span>
@@ -78,4 +84,3 @@ export function ListingCard({ listing }: { listing: BoardListing }) {
     </article>
   );
 }
-
