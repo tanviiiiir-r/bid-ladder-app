@@ -97,6 +97,7 @@ function BoardPage() {
               <Scale className="size-3.5" />
               How ranking works — money never buys organic position
             </Link>
+            <RanksFreshness listings={listings} />
           </div>
 
           <RisingStrip listings={listings} />
