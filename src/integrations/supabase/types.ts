@@ -276,6 +276,42 @@ export type Database = {
           },
         ]
       }
+      point_ledger: {
+        Row: {
+          amount_points: number
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          reason: string | null
+          reference_id: string | null
+          reference_type: string | null
+          type: Database["public"]["Enums"]["point_ledger_type"]
+          user_id: string
+        }
+        Insert: {
+          amount_points: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          type: Database["public"]["Enums"]["point_ledger_type"]
+          user_id: string
+        }
+        Update: {
+          amount_points?: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          type?: Database["public"]["Enums"]["point_ledger_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -394,42 +430,6 @@ export type Database = {
         }
         Relationships: []
       }
-      point_ledger: {
-        Row: {
-          amount_points: number
-          created_at: string
-          id: string
-          idempotency_key: string | null
-          reason: string | null
-          reference_id: string | null
-          reference_type: string | null
-          type: Database["public"]["Enums"]["point_ledger_type"]
-          user_id: string
-        }
-        Insert: {
-          amount_points: number
-          created_at?: string
-          id?: string
-          idempotency_key?: string | null
-          reason?: string | null
-          reference_id?: string | null
-          reference_type?: string | null
-          type: Database["public"]["Enums"]["point_ledger_type"]
-          user_id: string
-        }
-        Update: {
-          amount_points?: number
-          created_at?: string
-          id?: string
-          idempotency_key?: string | null
-          reason?: string | null
-          reference_id?: string | null
-          reference_type?: string | null
-          type?: Database["public"]["Enums"]["point_ledger_type"]
-          user_id?: string
-        }
-        Relationships: []
-      }
       wallets: {
         Row: {
           available_cents: number
@@ -475,17 +475,10 @@ export type Database = {
         Returns: Json
       }
       apply_credit_topup: {
-        Args: {
-          _cents: number
-          _idempotency_key: string
-          _user_id: string
-        }
+        Args: { _cents: number; _idempotency_key: string; _user_id: string }
         Returns: Json
       }
-      convert_points_to_credits: {
-        Args: { _points: number }
-        Returns: Json
-      }
+      convert_points_to_credits: { Args: { _points: number }; Returns: Json }
       freeze_daily_board: { Args: { _utc_date?: string }; Returns: undefined }
       recompute_rankings: { Args: never; Returns: undefined }
       record_event: {
