@@ -394,19 +394,58 @@ export type Database = {
         }
         Relationships: []
       }
+      point_ledger: {
+        Row: {
+          amount_points: number
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          reason: string | null
+          reference_id: string | null
+          reference_type: string | null
+          type: Database["public"]["Enums"]["point_ledger_type"]
+          user_id: string
+        }
+        Insert: {
+          amount_points: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          type: Database["public"]["Enums"]["point_ledger_type"]
+          user_id: string
+        }
+        Update: {
+          amount_points?: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          type?: Database["public"]["Enums"]["point_ledger_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallets: {
         Row: {
           available_cents: number
+          available_points: number
           updated_at: string
           user_id: string
         }
         Insert: {
           available_cents?: number
+          available_points?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           available_cents?: number
+          available_points?: number
           updated_at?: string
           user_id?: string
         }
@@ -424,6 +463,27 @@ export type Database = {
           _reason?: string
           _user_id: string
         }
+        Returns: Json
+      }
+      admin_grant_points: {
+        Args: {
+          _idempotency_key?: string
+          _points: number
+          _reason?: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      apply_credit_topup: {
+        Args: {
+          _cents: number
+          _idempotency_key: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      convert_points_to_credits: {
+        Args: { _points: number }
         Returns: Json
       }
       freeze_daily_board: { Args: { _utc_date?: string }; Returns: undefined }
@@ -453,6 +513,7 @@ export type Database = {
         | "adjustment"
       event_kind: "view" | "share"
       listing_status: "pending" | "approved" | "rejected"
+      point_ledger_type: "admin_grant" | "conversion" | "adjustment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -592,6 +653,7 @@ export const Constants = {
       ],
       event_kind: ["view", "share"],
       listing_status: ["pending", "approved", "rejected"],
+      point_ledger_type: ["admin_grant", "conversion", "adjustment"],
     },
   },
 } as const

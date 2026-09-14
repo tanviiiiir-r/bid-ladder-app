@@ -140,6 +140,31 @@ export const adminGrantCredits = createServerFn({ method: "POST" })
     return result;
   });
 
+export const adminGrantPoints = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        points: z.number().int().positive(),
+        reason: z.string().trim().max(300).optional(),
+        idempotencyKey: z.string().trim().min(8).max(80).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: result, error } = await supabaseAdmin.rpc("admin_grant_points", {
+      _user_id: data.userId,
+      _points: data.points,
+      ...(data.reason ? { _reason: data.reason } : {}),
+      ...(data.idempotencyKey ? { _idempotency_key: data.idempotencyKey } : {}),
+    });
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
 export const adminSetAllocation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>

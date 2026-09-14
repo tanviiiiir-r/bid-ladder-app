@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Crown, Flame, Scale } from "lucide-react";
+import { Flame, Scale } from "lucide-react";
 
 import { BoardTabs } from "@/components/board/BoardTabs";
 import { CategoryFilter } from "@/components/board/CategoryFilter";
+import { ClaimRankControl } from "@/components/board/ClaimRankControl";
 import { ListingCard } from "@/components/board/ListingCard";
 import { RanksFreshness } from "@/components/board/RanksFreshness";
 import { RisingStrip } from "@/components/board/RisingStrip";
@@ -110,7 +111,7 @@ function BoardPage() {
   const today = utcDateString();
   const selectedDate = board === "daily" ? (date ?? today) : today;
   const dateOptions = [today, ...archiveDates.filter((d) => d !== today)];
-  const claimFirstCents = listings[0]?.costToClaimFirstCents ?? RANKING.minVisibleCents;
+  const archivedDaily = board === "daily" && selectedDate !== today;
 
   const setSearch = (next: Partial<BoardSearch>) =>
     navigate({ to: "/", search: (prev) => ({ ...prev, ...next }) });
@@ -136,32 +137,7 @@ function BoardPage() {
               {formatCents(RANKING.numberOnePremiumCents)} more than the leader to take #1.
             </p>
 
-            <div className="mt-1 rounded-2xl border border-primary/30 bg-surface/70 p-5 shadow-[var(--shadow-card)] sm:p-6">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                    <Crown className="size-3.5 text-primary" />
-                    Claim #1
-                  </span>
-                  <div className="mt-2 flex items-baseline gap-1">
-                    <span className="allocation-price text-5xl leading-none sm:text-6xl">
-                      {formatCents(claimFirstCents)}
-                    </span>
-                    <span className="allocation-price text-2xl leading-none sm:text-3xl">+</span>
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Live cost to take the top position on this board.
-                  </p>
-                </div>
-
-                <Button asChild size="lg" className="w-full shrink-0 sm:w-auto">
-                  <Link to="/submit">
-                    <Crown className="size-4" />
-                    Claim #1 for {formatCents(claimFirstCents)}+
-                  </Link>
-                </Button>
-              </div>
-            </div>
+            <ClaimRankControl listings={listings} archived={archivedDaily} />
 
             <Link
               to="/how-ranking-works"
@@ -170,7 +146,6 @@ function BoardPage() {
               <Scale className="size-3.5" />
               How ranking works
             </Link>
-
 
             <RanksFreshness listings={listings} />
           </div>
@@ -212,7 +187,6 @@ function BoardPage() {
               </p>
             ) : null}
           </div>
-
 
           {listings.length > 0 && listings.length <= 3 ? (
             <p className="mt-5 rounded-lg border border-border bg-surface/60 px-3 py-2 text-xs text-muted-foreground">

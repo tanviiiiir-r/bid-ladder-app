@@ -7,3 +7,12 @@ export function formatCents(cents: number): string {
     maximumFractionDigits: 2,
   })}`;
 }
+
+/** Whole-dollar input string from cents. 1000 → "10" */
+export function centsToDollarInput(cents: number): string {
+  return String(Math.round(cents / 100));
+}
+
+export function formatPoints(points: number): string {
+  return `${points.toLocaleString("en-US")} pts`;
+}

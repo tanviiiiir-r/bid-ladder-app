@@ -161,3 +161,44 @@ export function rankVisible<T extends Rankable>(listings: T[]): (T & { rank: num
     .sort(compareAllocationRank)
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
+
+/** 1 point converts to 1 cent. */
+export const POINTS = {
+  centsPerPoint: 1,
+} as const;
+
+export function pointsForCents(cents: number): number {
+  return Math.ceil(cents / POINTS.centsPerPoint);
+}
+
+export function centsForPoints(points: number): number {
+  return points * POINTS.centsPerPoint;
+}
+
+/**
+ * Rank a new allocation would take on this board. Ties lose to listings already
+ * there. Passing the leader without the $5 #1 premium previews as #2.
+ */
+export function previewRankForAmount(
+  peers: Array<{ allocationCents: number }>,
+  newCents: number,
+): number | null {
+  if (!isBoardVisible(newCents)) return null;
+
+  const visible = peers.filter((peer) => isBoardVisible(peer.allocationCents));
+  const firstCents =
+    visible.length === 0 ? null : Math.max(...visible.map((peer) => peer.allocationCents));
+  const above = visible.filter((peer) => peer.allocationCents > newCents).length;
+  const ties = visible.filter((peer) => peer.allocationCents === newCents).length;
+  let rank = above + ties + 1;
+
+  if (
+    firstCents != null &&
+    newCents > firstCents &&
+    newCents < firstCents + RANKING.numberOnePremiumCents
+  ) {
+    rank = Math.max(rank, 2);
+  }
+
+  return rank;
+}
