@@ -17,6 +17,9 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedSubmitRouteImport } from './routes/_authenticated/submit'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
+import { Route as AuthenticatedCreditsBuyRouteImport } from './routes/_authenticated/credits.buy'
+import { Route as ApiStripeCheckoutRouteImport } from './routes/api/stripe/checkout'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as ApiPublicOgLSlugRouteImport } from './routes/api/public/og/l.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -58,6 +61,21 @@ const LSlugRoute = LSlugRouteImport.update({
   path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCreditsBuyRoute = AuthenticatedCreditsBuyRouteImport.update({
+  id: '/credits/buy',
+  path: '/credits/buy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiStripeCheckoutRoute = ApiStripeCheckoutRouteImport.update({
+  id: '/api/stripe/checkout',
+  path: '/api/stripe/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOgLSlugRoute = ApiPublicOgLSlugRouteImport.update({
   id: '/api/public/og/l/$slug',
   path: '/api/public/og/l/$slug',
@@ -72,6 +90,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/submit': typeof AuthenticatedSubmitRoute
   '/l/$slug': typeof LSlugRoute
+  '/credits/buy': typeof AuthenticatedCreditsBuyRoute
+  '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/api/public/og/l/$slug': typeof ApiPublicOgLSlugRoute
 }
 export interface FileRoutesByTo {
@@ -82,6 +103,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/submit': typeof AuthenticatedSubmitRoute
   '/l/$slug': typeof LSlugRoute
+  '/credits/buy': typeof AuthenticatedCreditsBuyRoute
+  '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/api/public/og/l/$slug': typeof ApiPublicOgLSlugRoute
 }
 export interface FileRoutesById {
@@ -94,6 +118,9 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/submit': typeof AuthenticatedSubmitRoute
   '/l/$slug': typeof LSlugRoute
+  '/_authenticated/credits/buy': typeof AuthenticatedCreditsBuyRoute
+  '/api/stripe/checkout': typeof ApiStripeCheckoutRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/api/public/og/l/$slug': typeof ApiPublicOgLSlugRoute
 }
 export interface FileRouteTypes {
@@ -106,6 +133,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/submit'
     | '/l/$slug'
+    | '/credits/buy'
+    | '/api/stripe/checkout'
+    | '/api/stripe/webhook'
     | '/api/public/og/l/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -116,6 +146,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/submit'
     | '/l/$slug'
+    | '/credits/buy'
+    | '/api/stripe/checkout'
+    | '/api/stripe/webhook'
     | '/api/public/og/l/$slug'
   id:
     | '__root__'
@@ -127,6 +160,9 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/submit'
     | '/l/$slug'
+    | '/_authenticated/credits/buy'
+    | '/api/stripe/checkout'
+    | '/api/stripe/webhook'
     | '/api/public/og/l/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -136,6 +172,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   HowRankingWorksRoute: typeof HowRankingWorksRoute
   LSlugRoute: typeof LSlugRoute
+  ApiStripeCheckoutRoute: typeof ApiStripeCheckoutRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ApiPublicOgLSlugRoute: typeof ApiPublicOgLSlugRoute
 }
 
@@ -197,6 +235,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/credits/buy': {
+      id: '/_authenticated/credits/buy'
+      path: '/credits/buy'
+      fullPath: '/credits/buy'
+      preLoaderRoute: typeof AuthenticatedCreditsBuyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/stripe/checkout': {
+      id: '/api/stripe/checkout'
+      path: '/api/stripe/checkout'
+      fullPath: '/api/stripe/checkout'
+      preLoaderRoute: typeof ApiStripeCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/og/l/$slug': {
       id: '/api/public/og/l/$slug'
       path: '/api/public/og/l/$slug'
@@ -211,12 +270,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSubmitRoute: typeof AuthenticatedSubmitRoute
+  AuthenticatedCreditsBuyRoute: typeof AuthenticatedCreditsBuyRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSubmitRoute: AuthenticatedSubmitRoute,
+  AuthenticatedCreditsBuyRoute: AuthenticatedCreditsBuyRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -228,6 +289,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   HowRankingWorksRoute: HowRankingWorksRoute,
   LSlugRoute: LSlugRoute,
+  ApiStripeCheckoutRoute: ApiStripeCheckoutRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ApiPublicOgLSlugRoute: ApiPublicOgLSlugRoute,
 }
 export const routeTree = rootRouteImport

@@ -161,3 +161,77 @@ export function rankVisible<T extends Rankable>(listings: T[]): (T & { rank: num
     .sort(compareAllocationRank)
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
+
+/** 1 point converts to 1 cent. */
+export const POINTS = {
+  centsPerPoint: 1,
+} as const;
+
+export function pointsForCents(cents: number): number {
+  return Math.ceil(cents / POINTS.centsPerPoint);
+}
+
+export function centsForPoints(points: number): number {
+  return points * POINTS.centsPerPoint;
+}
+
+/**
+ * Rank a new allocation would take on this board. Ties lose to listings already
+ * there. Passing the leader without the $5 #1 premium previews as #2.
+ */
+/** Snap a positive amount to the $1 increment, rounding up leftovers. */
+export function ceilToIncrement(cents: number): number {
+  if (cents <= 0) return 0;
+  return Math.ceil(cents / RANKING.incrementCents) * RANKING.incrementCents;
+}
+
+/**
+ * How to fund a target allocation: existing credits first, then points
+ * (points path only), then a Stripe leftover that is 0 or a $1 increment.
+ */
+export function planRankFunding(input: {
+  neededCents: number;
+  availableCents: number;
+  availablePoints: number;
+  method: "credits" | "points";
+}): { applyPoints: number; leftoverCents: number; alreadyCoveredCents: number } {
+  const needed = Math.max(RANKING.incrementCents, ceilToIncrement(input.neededCents));
+  const alreadyCoveredCents = Math.min(Math.max(0, input.availableCents), needed);
+  const shortfall = needed - alreadyCoveredCents;
+  if (shortfall === 0) {
+    return { applyPoints: 0, leftoverCents: 0, alreadyCoveredCents };
+  }
+  if (input.method !== "points") {
+    return { applyPoints: 0, leftoverCents: ceilToIncrement(shortfall), alreadyCoveredCents };
+  }
+  const applyPoints = Math.min(Math.max(0, input.availablePoints), shortfall);
+  return {
+    applyPoints,
+    leftoverCents: ceilToIncrement(shortfall - applyPoints),
+    alreadyCoveredCents,
+  };
+}
+
+export function previewRankForAmount(
+  peers: Array<{ allocationCents: number }>,
+  newCents: number,
+): number | null {
+  if (!isBoardVisible(newCents)) return null;
+
+  const visible = peers.filter((peer) => isBoardVisible(peer.allocationCents));
+  const firstCents =
+    visible.length === 0 ? null : Math.max(...visible.map((peer) => peer.allocationCents));
+  const above = visible.filter((peer) => peer.allocationCents > newCents).length;
+  const ties = visible.filter((peer) => peer.allocationCents === newCents).length;
+  let rank = above + ties + 1;
+
+  if (
+    firstCents != null &&
+    newCents > firstCents &&
+    newCents < firstCents + RANKING.numberOnePremiumCents
+  ) {
+    rank = Math.max(rank, 2);
+  }
+
+  return rank;
+}

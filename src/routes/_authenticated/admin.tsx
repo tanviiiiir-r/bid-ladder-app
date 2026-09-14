@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   adminGrantCredits,
+  adminGrantPoints,
   adminSetAllocation,
   getAuditLog,
   getReviewQueue,
   recomputeRankings,
   reviewListing,
 } from "@/lib/admin.functions";
-import { formatCents } from "@/lib/format";
+import { formatCents, formatPoints } from "@/lib/format";
 import { RANKING } from "@/lib/ranking";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,9 @@ function CreditTools() {
   const [grantUserId, setGrantUserId] = useState("");
   const [grantAmount, setGrantAmount] = useState("");
   const [grantReason, setGrantReason] = useState("");
+  const [pointUserId, setPointUserId] = useState("");
+  const [pointAmount, setPointAmount] = useState("");
+  const [pointReason, setPointReason] = useState("");
   const [allocListingId, setAllocListingId] = useState("");
   const [allocAmount, setAllocAmount] = useState("");
 
@@ -42,6 +46,19 @@ function CreditTools() {
       toast.success(`Granted ${formatCents(input.cents)}`);
       setGrantAmount("");
       setGrantReason("");
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+      queryClient.invalidateQueries({ queryKey: ["my-wallet"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const grantPoints = useMutation({
+    mutationFn: (input: { userId: string; points: number; reason?: string }) =>
+      adminGrantPoints({ data: input }),
+    onSuccess: (_result, input) => {
+      toast.success(`Granted ${formatPoints(input.points)}`);
+      setPointAmount("");
+      setPointReason("");
       queryClient.invalidateQueries({ queryKey: ["audit-log"] });
       queryClient.invalidateQueries({ queryKey: ["my-wallet"] });
     },
@@ -76,6 +93,20 @@ function CreditTools() {
     }
     const reason = grantReason.trim();
     grant.mutate({ userId: grantUserId.trim(), cents, ...(reason ? { reason } : {}) });
+  }
+
+  function submitGrantPoints() {
+    if (!UUID_RE.test(pointUserId.trim())) {
+      toast.error("Enter a valid user id (uuid)");
+      return;
+    }
+    const points = Number(pointAmount.trim());
+    if (!Number.isInteger(points) || points <= 0) {
+      toast.error("Points must be a positive whole number");
+      return;
+    }
+    const reason = pointReason.trim();
+    grantPoints.mutate({ userId: pointUserId.trim(), points, ...(reason ? { reason } : {}) });
   }
 
   function submitAllocation() {
@@ -129,6 +160,34 @@ function CreditTools() {
           />
           <Button size="sm" onClick={submitGrant} disabled={grant.isPending}>
             {grant.isPending ? "Granting…" : "Grant credits"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h2 className="font-display text-sm font-semibold">Grant points</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Whole points. 1 point converts to 1 cent of credits.
+        </p>
+        <div className="mt-3 flex flex-col gap-2">
+          <Input
+            placeholder="User id (uuid)"
+            value={pointUserId}
+            onChange={(event) => setPointUserId(event.target.value)}
+          />
+          <Input
+            placeholder="Points, e.g. 1000"
+            inputMode="numeric"
+            value={pointAmount}
+            onChange={(event) => setPointAmount(event.target.value)}
+          />
+          <Input
+            placeholder="Reason (optional)"
+            value={pointReason}
+            onChange={(event) => setPointReason(event.target.value)}
+          />
+          <Button size="sm" onClick={submitGrantPoints} disabled={grantPoints.isPending}>
+            {grantPoints.isPending ? "Granting…" : "Grant points"}
           </Button>
         </div>
       </div>

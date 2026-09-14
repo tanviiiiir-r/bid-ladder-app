@@ -8,7 +8,7 @@ export const getMyWallet = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: wallet, error } = await context.supabase
       .from("wallets")
-      .select("available_cents, updated_at")
+      .select("available_cents, available_points, updated_at")
       .eq("user_id", context.userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -24,12 +24,27 @@ export const getMyWallet = createServerFn({ method: "GET" })
       0,
     );
     const availableCents = wallet?.available_cents ?? 0;
+    const availablePoints = wallet?.available_points ?? 0;
 
     return {
       availableCents,
+      availablePoints,
       committedCents,
       updatedAt: wallet?.updated_at ?? null,
     };
+  });
+
+export const convertPointsToCredits = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ points: z.number().int().nonnegative() }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: result, error } = await context.supabase.rpc("convert_points_to_credits", {
+      _points: data.points,
+    });
+    if (error) throw new Error(error.message);
+    return result;
   });
 
 export const setListingAllocation = createServerFn({ method: "POST" })

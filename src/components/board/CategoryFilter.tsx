@@ -26,7 +26,6 @@ export function CategoryFilter({ categories, active, onChange }: Props) {
               : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
           )}
         >
-
           {option.name}
         </button>
       ))}

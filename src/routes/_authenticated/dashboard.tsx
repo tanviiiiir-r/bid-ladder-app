@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Eye, Share2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { AllocationControl } from "@/components/listing/AllocationControl";
 import { MovementBadge } from "@/components/MovementBadge";
@@ -9,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { amIAdmin } from "@/lib/admin.functions";
 import { getMyWallet } from "@/lib/allocation.functions";
 import type { BoardListing } from "@/lib/board.functions";
-import { formatCents } from "@/lib/format";
+import { formatCents, formatPoints } from "@/lib/format";
 import { getMyListings } from "@/lib/listings.functions";
 import { boardQuery } from "@/lib/queries";
 import { RANKING, isBoardVisible } from "@/lib/ranking";
@@ -92,7 +94,23 @@ function ClimbPanel({
   );
 }
 
+type DashboardSearch = { topup?: boolean; converted?: boolean };
+
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  validateSearch: (search: Record<string, unknown>): DashboardSearch => {
+    const out: DashboardSearch = {};
+    if (search["topup"] === true || search["topup"] === "1" || search["topup"] === "true") {
+      out.topup = true;
+    }
+    if (
+      search["converted"] === true ||
+      search["converted"] === "1" ||
+      search["converted"] === "true"
+    ) {
+      out.converted = true;
+    }
+    return out;
+  },
   head: () => ({
     meta: [
       { title: "My listings — Bid Ladder" },
@@ -111,6 +129,8 @@ const statusStyles: Record<string, string> = {
 };
 
 function DashboardPage() {
+  const navigate = useNavigate();
+  const { topup, converted } = Route.useSearch();
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["my-listings"],
     queryFn: () => getMyListings(),
@@ -120,6 +140,16 @@ function DashboardPage() {
   const { data: board = [] } = useQuery(boardQuery("all", "all_time"));
 
   const availableCents = wallet?.availableCents ?? 0;
+
+  useEffect(() => {
+    if (!topup && !converted) return;
+    toast.success(
+      topup
+        ? "Credits added. Allocate them on an approved listing to take a rank."
+        : "Points converted to credits. Allocate them on an approved listing.",
+    );
+    void navigate({ to: "/dashboard", search: {}, replace: true });
+  }, [topup, converted, navigate]);
 
   return (
     <div className="min-h-screen">
@@ -133,13 +163,18 @@ function DashboardPage() {
                 <Link to="/admin">Review queue</Link>
               </Button>
             ) : null}
+            <Button asChild size="sm" variant="secondary">
+              <Link to="/credits/buy" search={{ method: "credits" }}>
+                Buy credits
+              </Link>
+            </Button>
             <Button asChild size="sm">
               <Link to="/submit">New listing</Link>
             </Button>
           </div>
         </div>
 
-        <section className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-card p-4">
+        <section className="mt-4 grid grid-cols-3 gap-3 rounded-xl border border-border bg-card p-4">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Available</p>
             <p className="rank-number text-xl font-semibold">{formatCents(availableCents)}</p>
@@ -148,6 +183,12 @@ function DashboardPage() {
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Committed</p>
             <p className="rank-number text-xl font-semibold">
               {formatCents(wallet?.committedCents ?? 0)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Points</p>
+            <p className="rank-number text-xl font-semibold">
+              {formatPoints(wallet?.availablePoints ?? 0)}
             </p>
           </div>
         </section>
