@@ -11,6 +11,7 @@ import { trackEvent } from "@/lib/board.functions";
 import { formatCents } from "@/lib/format";
 import { boardQuery, listingQuery } from "@/lib/queries";
 import { BOARDS, RANKING, type BoardKind } from "@/lib/ranking";
+import { publicSiteUrl } from "@/lib/site-url";
 
 type ListingSearch = { board?: BoardKind; date?: string };
 
@@ -54,13 +55,16 @@ export const Route = createFileRoute("/l/$slug")({
         ? `${listing.name} — on Bid Ladder (rank pending)`
         : `#${listing.rank} on Bid Ladder — ${listing.name}`;
     const description = `${listing.tagline} · Credits allocated to a listing determine its rank on Bid Ladder.`;
-    const url = `https://rising-star-board.lovable.app/l/${params.slug}`;
+    const origin = publicSiteUrl();
+    const url = origin ? `${origin}/l/${params.slug}` : `/l/${params.slug}`;
     // Versioned by real rank + recompute time so a cached card can never claim
     // a rank the database has already moved past.
     const version = encodeURIComponent(
       `${listing.rank ?? "na"}-${listing.computedAt ?? "pending"}`,
     );
-    const image = `https://rising-star-board.lovable.app/api/public/og/l/${params.slug}?v=${version}`;
+    const image = origin
+      ? `${origin}/api/public/og/l/${params.slug}?v=${version}`
+      : `/api/public/og/l/${params.slug}?v=${version}`;
     return {
       meta: [
         { title },
@@ -79,17 +83,17 @@ export const Route = createFileRoute("/l/$slug")({
   component: ListingPage,
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-3xl px-4 py-16 text-center" role="alert">
-      <h1 className="font-display text-xl font-semibold">This listing couldn't load</h1>
+      <h1 className="font-display text-3xl">This listing couldn't load</h1>
       <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
     </div>
   ),
   notFoundComponent: () => (
     <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-      <h1 className="font-display text-xl font-semibold">Listing not found</h1>
+      <h1 className="font-display text-3xl">Listing not found</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         It may still be under review — only approved listings are public.
       </p>
-      <Link to="/" className="mt-6 inline-block text-sm text-primary">
+      <Link to="/" className="mt-6 inline-block text-sm text-foreground underline-offset-2 hover:underline">
         Back to the board
       </Link>
     </div>
@@ -151,17 +155,17 @@ function ListingPage() {
           Board
         </Link>
 
-        <section className="board-grid-bg mt-4 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+        <section className="mt-4 surface-card p-6 sm:p-8">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <span className="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+              <span className="rounded-md border-[0.5px] border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                 {data.categoryName}
               </span>
-              <h1 className="mt-3 truncate text-2xl font-bold sm:text-3xl">{data.name}</h1>
+              <h1 className="mt-3 truncate font-display text-[2rem] leading-tight sm:text-4xl">{data.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground">{data.tagline}</p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-2">
-              <span className="rank-number text-3xl font-bold text-foreground sm:text-4xl">
+              <span className="allocation-price text-3xl sm:text-4xl">
                 {formatCents(data.allocationCents)}
               </span>
               <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -169,7 +173,7 @@ function ListingPage() {
               </span>
               {onBoard ? (
                 <div className="flex items-center gap-2">
-                  <span className="rank-number text-lg font-semibold text-primary">
+                  <span className="rank-number text-lg">
                     #{data.rank}
                   </span>
                   <MovementBadge rank={data.rank} previousRank={data.previousRank} />
@@ -179,7 +183,7 @@ function ListingPage() {
           </div>
 
           {onBoard ? (
-            <div className="mt-5 rounded-xl border border-border bg-surface p-4">
+            <div className="mt-5 rounded-lg bg-muted p-4">
               <p className="text-sm font-medium text-foreground">
                 Anyone can take this rank for {formatCents(overtakeCents)} on the{" "}
                 {data.categoryName} board.
@@ -194,7 +198,7 @@ function ListingPage() {
               </p>
             </div>
           ) : (
-            <div className="mt-5 rounded-xl border border-border bg-surface p-4">
+            <div className="mt-5 rounded-lg bg-muted p-4">
               <p className="text-sm font-medium text-foreground">
                 Not on the public {boardLabel} board yet.
               </p>
@@ -203,7 +207,7 @@ function ListingPage() {
                 {shortfallCents > 0 ? ` — ${formatCents(shortfallCents)} to go` : ""}. Claiming #1
                 on this board costs {formatCents(data.costToClaimFirstCents)}.
               </p>
-              <Button asChild variant="secondary" size="sm" className="mt-3">
+              <Button asChild size="sm" className="mt-3">
                 <Link to="/dashboard">
                   <TrendingUp className="size-4" />
                   Allocate credits
@@ -213,7 +217,7 @@ function ListingPage() {
           )}
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Button asChild>
+            <Button asChild variant="outline">
               <a href={data.url} target="_blank" rel="noopener noreferrer">
                 Visit site
                 <ExternalLink className="size-4" />
@@ -226,8 +230,8 @@ function ListingPage() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-card p-5">
-          <h2 className="font-display text-lg font-semibold">About</h2>
+        <section className="mt-6 surface-card p-6">
+          <h2 className="font-display text-2xl">About</h2>
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
             {data.description}
           </p>
@@ -247,7 +251,7 @@ function ListingPage() {
 
         <p className="mt-4 text-xs text-muted-foreground">
           Credits allocated to a listing determine its rank —{" "}
-          <Link to="/how-ranking-works" className="text-primary underline-offset-2 hover:underline">
+          <Link to="/how-ranking-works" className="text-foreground underline-offset-2 hover:underline">
             how ranking works
           </Link>
           .

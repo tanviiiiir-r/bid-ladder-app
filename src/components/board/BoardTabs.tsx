@@ -18,7 +18,7 @@ export function BoardTabs({
     <div
       role="tablist"
       aria-label="Board"
-      className="inline-flex w-full min-w-0 max-w-sm items-center gap-1 rounded-full border border-border bg-card p-1"
+      className="inline-flex w-full min-w-0 max-w-sm items-center gap-1"
     >
       {BOARDS.map((board) => {
         const isActive = board === active;
@@ -30,7 +30,7 @@ export function BoardTabs({
             aria-selected={isActive}
             onClick={() => onChange(board)}
             className={cn(
-              "flex-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors sm:text-sm",
+              "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors sm:text-sm",
               isActive
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground",

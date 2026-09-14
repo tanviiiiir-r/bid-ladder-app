@@ -36,11 +36,11 @@ function ClimbPanel({
   const ranking = listing.rankings ?? null;
 
   return (
-    <div className="mt-3 rounded-lg border border-border bg-surface/60 p-3">
+            <div className="mt-3 rounded-lg bg-muted p-4">
       {onBoard ? (
         <>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rank-number text-base font-semibold text-primary">
+            <span className="rank-number text-base">
               You are #{rank}
             </span>
             <MovementBadge rank={rank} previousRank={onBoardRow?.previousRank ?? null} />
@@ -86,7 +86,7 @@ function ClimbPanel({
           {ranking?.shares ?? 0}
         </span>
         <span>watch-only · never affects rank</span>
-        <Link to="/how-ranking-works" className="text-primary underline-offset-2 hover:underline">
+        <Link to="/how-ranking-works" className="text-foreground underline-offset-2 hover:underline">
           How ranking works
         </Link>
       </p>
@@ -123,8 +123,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const statusStyles: Record<string, string> = {
-  pending: "bg-secondary text-muted-foreground",
-  approved: "bg-rise/15 text-rise",
+  pending: "bg-muted text-muted-foreground",
+  approved: "bg-muted text-foreground",
   rejected: "bg-fall/15 text-fall",
 };
 
@@ -156,40 +156,38 @@ function DashboardPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">My listings</h1>
+          <h1 className="font-display text-[2rem] leading-tight">My listings</h1>
           <div className="flex gap-2">
             {admin?.isAdmin ? (
               <Button asChild variant="secondary" size="sm">
                 <Link to="/admin">Review queue</Link>
               </Button>
             ) : null}
-            <Button asChild size="sm" variant="secondary">
+            <Button asChild size="sm">
               <Link to="/credits/buy" search={{ method: "credits" }}>
                 Buy credits
               </Link>
             </Button>
-            <Button asChild size="sm">
+            <Button asChild size="sm" variant="secondary">
               <Link to="/submit">New listing</Link>
             </Button>
           </div>
         </div>
 
-        <section className="mt-4 grid grid-cols-3 gap-3 rounded-xl border border-border bg-card p-4">
+        <section className="mt-4 grid grid-cols-3 gap-3 surface-card p-5">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Available</p>
-            <p className="rank-number text-xl font-semibold">{formatCents(availableCents)}</p>
+            <p className="rank-number text-xl">{formatCents(availableCents)}</p>
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Committed</p>
-            <p className="rank-number text-xl font-semibold">
+            <p className="rank-number text-xl">
               {formatCents(wallet?.committedCents ?? 0)}
             </p>
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Points</p>
-            <p className="rank-number text-xl font-semibold">
-              {formatPoints(wallet?.availablePoints ?? 0)}
-            </p>
+            <p className="text-xl font-medium tabular-nums">{formatPoints(wallet?.availablePoints ?? 0)}</p>
           </div>
         </section>
 
@@ -202,12 +200,12 @@ function DashboardPage() {
             </div>
           ) : (
             listings.map((listing: MyListing) => (
-              <article key={listing.id} className="rounded-xl border border-border bg-card p-4">
+              <article key={listing.id} className="surface-card p-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-display text-base font-semibold">{listing.name}</h2>
+                  <h2 className="font-display text-xl">{listing.name}</h2>
                   <span
                     className={cn(
-                      "rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize",
+                      "rounded-md px-2 py-0.5 text-[11px] font-medium capitalize",
                       statusStyles[listing.status] ?? statusStyles["pending"],
                     )}
                   >
@@ -226,7 +224,7 @@ function DashboardPage() {
                     <Link
                       to="/l/$slug"
                       params={{ slug: listing.slug }}
-                      className="mt-2 inline-block text-sm text-primary"
+                      className="mt-2 inline-block text-sm text-foreground underline-offset-2 hover:underline"
                     >
                       View on the board
                     </Link>

@@ -16,6 +16,9 @@ dist-ssr
 .nitro
 *.local
 
+# Vercel
+.vercel
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
@@ -32,9 +35,8 @@ dist-ssr
 *.sw?
 
 # secrets
-# .env holds only public Lovable Cloud values and must be committed for publish builds
+.env
 .env.local
 .env.*.local
 .dev.vars
-!.env
 !.env.example

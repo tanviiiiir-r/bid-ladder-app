@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 
 export type Theme = "light" | "dark";
 
-const STORAGE_KEY = "bidladder_theme";
+/** Bumped so a leftover ElevenLabs-era "light" value cannot keep the board pale. */
+const STORAGE_KEY = "bidladder_theme_v2";
 
 function apply(theme: Theme) {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
+  root.classList.toggle("light", theme === "light");
   root.style.colorScheme = theme;
 }
 
@@ -16,12 +18,7 @@ export function useTheme() {
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    const initial: Theme =
-      stored === "light" || stored === "dark"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: light)").matches
-          ? "light"
-          : "dark";
+    const initial: Theme = stored === "light" ? "light" : "dark";
     setTheme(initial);
     apply(initial);
     setMounted(true);

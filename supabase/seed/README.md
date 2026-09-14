@@ -2,8 +2,8 @@
 
 Wipeable fake users and listings so All-time / Today look like a real board **before go-live**.
 
-- Run on Lovable Cloud project `6e05f72b-e75f-4175-a163-ef7e3b9791d9` only.
-- Do **not** publish. Do **not** run on the unused prod shell.
+- Run on a disposable preview/dev Supabase project only. Never on production.
+- Do **not** publish seed listings as real traction.
 - Identities: `seed+makerNN@bid-ladder.dev`. Listing names and descriptions start with `[SEED]`.
 - Apply `preview_unseed.sql` before any public launch.
 

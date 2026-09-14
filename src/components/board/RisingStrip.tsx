@@ -24,7 +24,7 @@ export function RisingStrip({ listings }: { listings: BoardListing[] }) {
 
   return (
     <section aria-label="Rising and new listings" className="mt-6">
-      <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h2 className="flex items-center gap-1.5 text-xs font-medium tracking-[0.01em] text-muted-foreground">
         <TrendingUp className="size-3.5" />
         Rising &amp; new
       </h2>
@@ -34,9 +34,9 @@ export function RisingStrip({ listings }: { listings: BoardListing[] }) {
             key={listing.id}
             to="/l/$slug"
             params={{ slug: listing.slug }}
-            className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-sm transition-colors hover:border-primary/40"
+            className="flex shrink-0 items-center gap-2 rounded-md border-[0.5px] border-border bg-transparent px-3 py-1.5 text-sm transition-colors hover:bg-accent"
           >
-            <span className="rank-number text-xs font-semibold text-primary">
+            <span className="rank-number text-xs">
               {listing.rank ?? "—"}
             </span>
             <span className="max-w-[9rem] truncate font-medium">{listing.name}</span>

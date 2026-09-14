@@ -49,7 +49,7 @@ export function AmountStepper({
     <div className="flex flex-wrap items-center gap-2">
       <Button
         type="button"
-        variant="secondary"
+        variant="outline"
         size="icon"
         aria-label={`Decrease by ${formatCents(RANKING.incrementCents)}`}
         disabled={disabled || valueCents <= RANKING.minVisibleCents}
@@ -57,10 +57,10 @@ export function AmountStepper({
       >
         <Minus className="size-4" />
       </Button>
-      <label className="flex min-w-0 items-baseline gap-0.5 rounded-lg border border-border bg-background px-3 py-1.5 focus-within:border-primary">
+      <label className="flex min-w-0 items-baseline gap-0.5 px-1 py-1 focus-within:outline-none">
         <span
           className={cn(
-            "allocation-price leading-none text-muted-foreground",
+            "allocation-price leading-none",
             large ? "text-3xl sm:text-4xl" : "text-2xl",
           )}
         >
@@ -93,7 +93,7 @@ export function AmountStepper({
       </label>
       <Button
         type="button"
-        variant="secondary"
+        variant="outline"
         size="icon"
         aria-label={`Increase by ${formatCents(RANKING.incrementCents)}`}
         disabled={disabled}

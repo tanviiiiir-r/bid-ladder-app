@@ -12,7 +12,7 @@ export function CategoryFilter({ categories, active, onChange }: Props) {
   const options = [{ id: "all", slug: "all", name: "All" }, ...categories];
 
   return (
-    <div className="scrollbar-none flex gap-1 overflow-x-auto rounded-full border border-border bg-card/70 p-1">
+    <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5">
       {options.map((option) => (
         <button
           key={option.slug}
@@ -20,10 +20,10 @@ export function CategoryFilter({ categories, active, onChange }: Props) {
           onClick={() => onChange(option.slug)}
           aria-pressed={active === option.slug}
           className={cn(
-            "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors",
+            "shrink-0 rounded-md border-[0.5px] px-2.5 py-1 text-xs font-medium tracking-[-0.011em] transition-colors",
             active === option.slug
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-surface hover:text-foreground",
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-transparent text-muted-foreground hover:text-foreground",
           )}
         >
           {option.name}

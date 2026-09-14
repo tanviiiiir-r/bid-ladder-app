@@ -161,7 +161,7 @@ function BuyCreditsPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto w-full max-w-xl px-4 pb-16 pt-8">
-        <h1 className="text-2xl font-bold">
+        <h1 className="font-display text-[2rem] leading-tight">
           {method === "points" ? "Buy with points" : "Buy with credits"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -174,7 +174,7 @@ function BuyCreditsPage() {
           </p>
         ) : null}
 
-        <section className="mt-6 rounded-xl border border-border bg-card p-5">
+        <section className="mt-6 surface-card p-6">
           <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Amount</p>
           <div className="mt-3">
             <AmountStepper valueCents={draftCents} onChange={commitAmount} size="md" />
@@ -185,13 +185,13 @@ function BuyCreditsPage() {
           </p>
 
           <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-lg border border-border bg-surface/60 p-3">
+            <div className="rounded-lg bg-muted p-3">
               <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Credits</dt>
               <dd className="mt-1 font-semibold">
                 {formatCents(wallet.data?.availableCents ?? 0)}
               </dd>
             </div>
-            <div className="rounded-lg border border-border bg-surface/60 p-3">
+            <div className="rounded-lg bg-muted p-3">
               <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Points</dt>
               <dd className="mt-1 font-semibold">{formatPoints(availablePoints)}</dd>
             </div>

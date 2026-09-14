@@ -25,7 +25,7 @@ Bid Ladder copies Outbid’s **information architecture** (rank left, allocation
 1. Open https://outbid.lol in a real browser. The bot wall is common — wait and retry. Do not bypass it with scrapers.
 2. Capture public surfaces: homepage board, All-time / Today / Daily, category rail, ranked row, Claim #1, listing detail, auth CTAs.
 3. Try the signed-in dashboard. If login blocks it, status = `blocked`. Infer only from public CTAs plus the last successful walkthrough.
-4. Map each function to Bid Ladder (live UI is Lovable / `origin/main`, not a stale local checkout):
+4. Map each function to Bid Ladder (`origin/main` / the live Vercel host, not a stale local checkout):
 
 | Bid Ladder | Role |
 |---|---|
@@ -48,7 +48,7 @@ Bid Ladder copies Outbid’s **information architecture** (rank left, allocation
 
 | Outbid surface / function | Bid Ladder route or server fn | Status | Visual gap | Next action |
 |---|---|---|---|---|
-| … | … | `done` / `partial` / `missing` / `blocked` / `out-of-scope-layer-2+` | density, type, color, chrome | Cursor vs Lovable |
+| … | … | `done` / `partial` / `missing` / `blocked` / `out-of-scope-layer-2+` | density, type, color, chrome | owner |
 
 Status meanings:
 
@@ -79,6 +79,6 @@ Overwrite `docs/OUTBID_PARITY_REVIEW.md` with:
 2. The comparison table
 3. Dashboard-only section (every control, even if blocked)
 4. Visual/brand gaps (structure to copy, red prices **not** to copy)
-5. Ordered next actions (Lovable one screen at a time; Cursor owns contract/seed)
+5. Ordered next actions (one screen at a time; keep brand contract + seed honest)
 
 Keep the file honest. A `partial` row is more useful than a fake `done`.
