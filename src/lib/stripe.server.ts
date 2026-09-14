@@ -14,12 +14,26 @@ export function isStripeConfigured(): boolean {
   return Boolean(stripeSecretKey());
 }
 
+export function publicOriginFromRequest(request: Request): string {
+  const url = new URL(request.url);
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
+  if (host) return `${proto}://${host.split(",")[0]!.trim()}`;
+  return url.origin;
+}
+
 export function getStripe(): Stripe {
   const key = stripeSecretKey();
   if (!key) {
     throw new Error("Stripe is not configured. Set STRIPE_SECRET_KEY.");
   }
-  return new Stripe(key);
+  // Cloudflare Workers have fetch, not Node http. Without this, checkout.sessions.create
+  // can hang forever and the buy page stays on "Opening Stripe…".
+  return new Stripe(key, {
+    timeout: 20_000,
+    maxNetworkRetries: 1,
+    httpClient: Stripe.createFetchHttpClient(),
+  });
 }
 
 export function assertCheckoutCents(cents: number): number {
@@ -42,6 +56,8 @@ export async function createCreditCheckoutSession(input: {
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    ui_mode: "hosted",
+    payment_method_types: ["card"],
     success_url: `${input.origin}/dashboard?topup=1`,
     cancel_url: `${input.origin}/credits/buy?cents=${cents}&method=${input.method}&canceled=1`,
     line_items: [

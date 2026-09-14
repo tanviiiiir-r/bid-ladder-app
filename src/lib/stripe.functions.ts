@@ -5,8 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { RANKING } from "@/lib/ranking";
 
 export const getStripeStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const { isStripeConfigured } = await import("@/lib/stripe.server");
-  return { configured: isStripeConfigured() };
+  return { configured: Boolean(process.env["STRIPE_SECRET_KEY"]?.trim()) };
 });
 
 export const createStripeCheckout = createServerFn({ method: "POST" })
@@ -23,12 +22,14 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     if (data.cents % RANKING.incrementCents !== 0) {
       throw new Error(`Amount must be in ${RANKING.incrementCents}-cent increments.`);
     }
-    const { createCreditCheckoutSession, isStripeConfigured } = await import("@/lib/stripe.server");
+    const { createCreditCheckoutSession, isStripeConfigured, publicOriginFromRequest } =
+      await import("@/lib/stripe.server");
     if (!isStripeConfigured()) {
       throw new Error("Checkout is not configured. Set STRIPE_SECRET_KEY.");
     }
     const { getRequest } = await import("@tanstack/react-start/server");
-    const origin = new URL(getRequest().url).origin;
+    const request = getRequest();
+    const origin = publicOriginFromRequest(request);
     return createCreditCheckoutSession({
       userId: context.userId,
       cents: data.cents,
