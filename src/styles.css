@@ -190,6 +190,13 @@
   border: 0.5px solid var(--color-border);
 }
 
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility rank-number {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
