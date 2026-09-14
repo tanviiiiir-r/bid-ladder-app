@@ -8,6 +8,7 @@ import { ClaimRankControl } from "@/components/board/ClaimRankControl";
 import { ListingCard } from "@/components/board/ListingCard";
 import { RanksFreshness } from "@/components/board/RanksFreshness";
 import { RisingStrip } from "@/components/board/RisingStrip";
+import { TodayRanking } from "@/components/board/TodayRanking";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/")({
       context.queryClient.ensureQueryData(categoriesQuery()),
       context.queryClient.ensureQueryData(dailyArchiveDatesQuery()),
       context.queryClient.ensureQueryData(boardQuery(deps.category, deps.board, deps.date)),
+      context.queryClient.ensureQueryData(boardQuery(deps.category, "today")),
     ]);
   },
   head: () => ({
@@ -106,6 +108,7 @@ function BoardPage() {
   const { data: categories } = useSuspenseQuery(categoriesQuery());
   const { data: archiveDates } = useSuspenseQuery(dailyArchiveDatesQuery());
   const { data: listings } = useSuspenseQuery(boardQuery(category, board, date));
+  const { data: todayListings } = useSuspenseQuery(boardQuery(category, "today"));
   useBoardRealtime();
 
   const today = utcDateString();
@@ -120,28 +123,42 @@ function BoardPage() {
     <div className="min-h-screen">
       <SiteHeader />
 
+      <div className="sticky top-14 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
+        <div className="mx-auto w-full max-w-6xl px-4 py-2">
+          <CategoryFilter
+            categories={categories}
+            active={category}
+            onChange={(slug) => setSearch({ category: slug })}
+          />
+        </div>
+      </div>
+
       <main className="board-grid-bg">
-        <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-8 sm:pt-12">
-          <div className="flex flex-col gap-3">
-            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-8 sm:pt-12">
+          <div className="flex flex-col items-center gap-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               <Flame className="size-3.5" />
               Live board
             </span>
-            <h1 className="text-3xl font-bold leading-tight sm:text-4xl">
-              What's getting attention right now
+
+            <BoardTabs active={board} onChange={(next) => setSearch({ board: next })} />
+
+            <h1 className="sr-only">
+              Bid Ladder — the live allocation board for early-stage products
             </h1>
-            <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
+
+            <ClaimRankControl listings={listings} archived={archivedDaily} />
+
+            <p className="max-w-xl text-center text-xs text-muted-foreground">
               Credits allocated to a listing determine its rank. Minimum{" "}
               {formatCents(RANKING.minVisibleCents)} to appear,{" "}
               {formatCents(RANKING.incrementCents)} steps, and{" "}
               {formatCents(RANKING.numberOnePremiumCents)} more than the leader to take #1.
             </p>
 
-            <ClaimRankControl listings={listings} archived={archivedDaily} />
-
             <Link
               to="/how-ranking-works"
-              className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
             >
               <Scale className="size-3.5" />
               How ranking works
@@ -150,79 +167,71 @@ function BoardPage() {
             <RanksFreshness listings={listings} />
           </div>
 
-          <RisingStrip listings={listings} />
-
-          <div className="mt-6 rounded-2xl border border-border bg-surface/60 p-3 sm:p-4">
-            <div className="grid grid-cols-1 items-center gap-3 sm:flex sm:justify-between">
-              <BoardTabs active={board} onChange={(next) => setSearch({ board: next })} />
-              {board === "daily" ? (
-                <Select value={selectedDate} onValueChange={(value) => setSearch({ date: value })}>
-                  <SelectTrigger className="w-full shrink-0 sm:w-[210px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dateOptions.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option === today ? `${option} · today (live)` : `${option} · archive`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : null}
-            </div>
-
-            <div className="mt-3 border-t border-border pt-3">
-              <CategoryFilter
-                categories={categories}
-                active={category}
-                onChange={(slug) => setSearch({ category: slug })}
-              />
-            </div>
-
-            {board === "daily" ? (
-              <p className="mt-2 text-xs text-muted-foreground">
+          {board === "daily" ? (
+            <div className="mt-6 flex flex-col items-center gap-2">
+              <Select value={selectedDate} onValueChange={(value) => setSearch({ date: value })}>
+                <SelectTrigger className="w-full sm:w-[240px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {dateOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option === today ? `${option} · today (live)` : `${option} · archive`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-center text-xs text-muted-foreground">
                 {selectedDate === today
                   ? `${selectedDate} is today's live UTC board — positions can still change until UTC midnight.`
                   : `${selectedDate} is a frozen archive of that closed UTC day. It no longer updates.`}
               </p>
-            ) : null}
-          </div>
-
-          {listings.length > 0 && listings.length <= 3 ? (
-            <p className="mt-5 rounded-lg border border-border bg-surface/60 px-3 py-2 text-xs text-muted-foreground">
-              Early board: only {listings.length} listed{" "}
-              {listings.length === 1 ? "product" : "products"} here so far. Positions move fast —
-              and we don't seed fake popularity.
-            </p>
+            </div>
           ) : null}
 
-          <div className="mt-5 flex flex-col gap-3">
-            {listings.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border bg-surface/50 p-10 text-center">
-                <p className="font-display text-lg font-semibold">The ladder is empty</p>
-                <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-                  Nobody has allocated at least {formatCents(RANKING.minVisibleCents)} on this board
-                  yet. We don't seed fake listings, so this stays empty until someone takes a
-                  position.
+          <RisingStrip listings={listings} />
+
+          <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            <div>
+              {listings.length > 0 && listings.length <= 3 ? (
+                <p className="mb-3 rounded-lg border border-border bg-surface/60 px-3 py-2 text-xs text-muted-foreground">
+                  Early board: only {listings.length} listed{" "}
+                  {listings.length === 1 ? "product" : "products"} here so far. Positions move fast —
+                  and we don't seed fake popularity.
                 </p>
-                <div className="mt-5 flex flex-col items-center gap-2">
-                  <Button asChild>
-                    <Link to="/submit">Submit your product</Link>
-                  </Button>
-                  <Link
-                    to="/how-ranking-works"
-                    className="text-xs text-primary underline-offset-2 hover:underline"
-                  >
-                    See how ranking works
-                  </Link>
-                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-2.5">
+                {listings.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border bg-surface/50 p-10 text-center">
+                    <p className="font-display text-lg font-semibold">The ladder is empty</p>
+                    <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                      Nobody has allocated at least {formatCents(RANKING.minVisibleCents)} on this
+                      board yet. We don't seed fake listings, so this stays empty until someone takes
+                      a position.
+                    </p>
+                    <div className="mt-5 flex flex-col items-center gap-2">
+                      <Button asChild>
+                        <Link to="/submit">Submit your product</Link>
+                      </Button>
+                      <Link
+                        to="/how-ranking-works"
+                        className="text-xs text-primary underline-offset-2 hover:underline"
+                      >
+                        See how ranking works
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)
+                )}
               </div>
-            ) : (
-              listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)
-            )}
+            </div>
+
+            <TodayRanking listings={todayListings} />
           </div>
 
-          <p className="mt-8 text-center text-xs text-muted-foreground">
+          <p className="mt-10 text-center text-xs text-muted-foreground">
             Credits allocated to a listing determine its rank. Equal allocations are broken by who
             got there first —{" "}
             <Link

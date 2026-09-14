@@ -165,6 +165,13 @@
     linear-gradient(to bottom, oklch(1 0 0 / 3%), transparent 220px);
 }
 
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility rank-number {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

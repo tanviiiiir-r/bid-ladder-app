@@ -53,75 +53,68 @@ export function ClaimRankControl({
   }
 
   return (
-    <div className="mt-1 rounded-2xl border border-primary/30 bg-surface/70 p-5 shadow-[var(--shadow-card)] sm:p-6">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            <Crown className="size-3.5 text-primary" />
-            {previewRank == null ? "Below the board" : `Claim #${previewRank}`}
-          </span>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              aria-label={`Decrease by ${formatCents(RANKING.incrementCents)}`}
-              disabled={archived || draftCents <= RANKING.minVisibleCents}
-              onClick={() => applyCents(draftCents - RANKING.incrementCents)}
-            >
-              <Minus className="size-4" />
-            </Button>
-            <div className="flex items-baseline gap-0.5">
-              <span className="allocation-price text-3xl leading-none text-muted-foreground sm:text-4xl">
-                $
-              </span>
-              <input
-                className="allocation-price min-w-[3ch] bg-transparent text-5xl leading-none outline-none sm:text-6xl"
-                style={{ width: `${Math.max(2, dollarInput.length + 1)}ch` }}
-                inputMode="numeric"
-                aria-label="Amount in dollars"
-                disabled={archived}
-                value={dollarInput}
-                onChange={(event) => setDollarInput(event.target.value.replace(/[^\d]/g, ""))}
-                onBlur={commitInput}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    commitInput();
-                  }
-                }}
-              />
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              aria-label={`Increase by ${formatCents(RANKING.incrementCents)}`}
-              disabled={archived}
-              onClick={() => applyCents(draftCents + RANKING.incrementCents)}
-            >
-              <Plus className="size-4" />
-            </Button>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {archived
-              ? "This Daily board is archived. Switch to today to claim a rank."
-              : previewRank == null
-                ? `Allocate at least ${formatCents(RANKING.minVisibleCents)} to appear.`
-                : `Your amount decides the rank. Paying less than #1 still lands at #${previewRank}.`}
-          </p>
-        </div>
+    <div className="flex flex-col items-center text-center">
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+        <h2 className="font-display text-4xl font-bold leading-none tracking-tight sm:text-6xl">
+          {previewRank == null ? "Claim a rank for" : `Claim #${previewRank} for`}
+        </h2>
 
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            className="rounded-full"
+            aria-label={`Decrease by ${formatCents(RANKING.incrementCents)}`}
+            disabled={archived || draftCents <= RANKING.minVisibleCents}
+            onClick={() => applyCents(draftCents - RANKING.incrementCents)}
+          >
+            <Minus className="size-4" />
+          </Button>
+          <div className="flex items-baseline">
+            <span className="allocation-price text-4xl leading-none sm:text-6xl">$</span>
+            <input
+              className="allocation-price min-w-[2ch] bg-transparent text-4xl leading-none outline-none sm:text-6xl"
+              style={{ width: `${Math.max(2, dollarInput.length + 1)}ch` }}
+              inputMode="numeric"
+              aria-label="Amount in dollars"
+              disabled={archived}
+              value={dollarInput}
+              onChange={(event) => setDollarInput(event.target.value.replace(/[^\d]/g, ""))}
+              onBlur={commitInput}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  commitInput();
+                }
+              }}
+            />
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            className="rounded-full"
+            aria-label={`Increase by ${formatCents(RANKING.incrementCents)}`}
+            disabled={archived}
+            onClick={() => applyCents(draftCents + RANKING.incrementCents)}
+          >
+            <Plus className="size-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-5 flex w-full max-w-2xl flex-col items-center gap-2 sm:flex-row sm:justify-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="lg" className="w-full shrink-0 sm:w-auto" disabled={archived}>
+            <Button size="lg" className="w-full rounded-full sm:w-auto" disabled={archived}>
               <Crown className="size-4" />
               {previewRank == null
                 ? `Claim rank for ${formatCents(liveCents)}`
                 : `Claim #${previewRank} for ${formatCents(liveCents)}`}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuContent align="center" className="w-64">
             <DropdownMenuLabel>Pay with</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
@@ -148,7 +141,19 @@ export function ClaimRankControl({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Button asChild variant="secondary" size="lg" className="w-full rounded-full sm:w-auto">
+          <Link to="/submit">Submit your product</Link>
+        </Button>
       </div>
+
+      <p className="mt-3 max-w-xl text-xs text-muted-foreground">
+        {archived
+          ? "This Daily board is archived. Switch to today to claim a rank."
+          : previewRank == null
+            ? `Allocate at least ${formatCents(RANKING.minVisibleCents)} to appear.`
+            : `Your amount decides the rank. Paying less than #1 still lands at #${previewRank}.`}
+      </p>
     </div>
   );
 }
