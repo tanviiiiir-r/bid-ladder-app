@@ -5,8 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Bid Ladder design system — single dark "trading board" theme.
- * All colors are oklch semantic tokens. Never hardcode colors in components.
+ * Bid Ladder design system — Outbid structure, own gold.
+ * Allocation prices use --allocation (gold), never --fall / coral.
+ * All colors are oklch semantic tokens. Never hardcode hex in components.
  */
 
 @theme inline {
@@ -40,6 +41,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-rise: var(--rise);
   --color-fall: var(--fall);
+  --color-allocation: var(--allocation);
+  --color-allocation-foreground: var(--allocation-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -55,6 +58,8 @@
 
   --shadow-glow: 0 0 0 1px var(--primary-soft), 0 18px 50px -24px var(--primary-soft);
   --shadow-card: 0 1px 0 0 var(--border), 0 24px 48px -32px oklch(0 0 0 / 0.8);
+  --board-max: 64rem;
+  --board-row-pad: 1rem;
 }
 
 :root {
@@ -80,6 +85,8 @@
   --destructive-foreground: oklch(0.99 0.005 264);
   --rise: oklch(0.58 0.15 152);
   --fall: oklch(0.57 0.2 22);
+  --allocation: oklch(0.72 0.16 60);
+  --allocation-foreground: oklch(0.19 0.03 60);
   --border: oklch(0.21 0.015 264 / 12%);
   --input: oklch(0.21 0.015 264 / 16%);
   --ring: oklch(0.72 0.16 60 / 0.5);
@@ -115,6 +122,8 @@
   --destructive-foreground: oklch(0.98 0.005 264);
   --rise: oklch(0.78 0.17 152);
   --fall: oklch(0.68 0.18 22);
+  --allocation: oklch(0.84 0.16 68);
+  --allocation-foreground: oklch(0.19 0.03 60);
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 13%);
   --ring: oklch(0.79 0.163 68 / 0.6);
@@ -159,4 +168,11 @@
 @utility rank-number {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+@utility allocation-price {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--color-allocation);
 }
