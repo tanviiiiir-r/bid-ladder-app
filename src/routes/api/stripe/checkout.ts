@@ -46,17 +46,17 @@ export const Route = createFileRoute("/api/stripe/checkout")({
           return Response.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { createCreditCheckoutSession, isStripeConfigured } =
-          await import("@/lib/stripe.server");
-        if (!isStripeConfigured()) {
-          return Response.json(
-            { error: "Checkout is not configured. Set STRIPE_SECRET_KEY." },
-            { status: 503 },
-          );
-        }
-
         try {
-          const origin = new URL(request.url).origin;
+          const { createCreditCheckoutSession, isStripeConfigured, publicOriginFromRequest } =
+            await import("@/lib/stripe.server");
+          if (!isStripeConfigured()) {
+            return Response.json(
+              { error: "Checkout is not configured. Set STRIPE_SECRET_KEY." },
+              { status: 503 },
+            );
+          }
+
+          const origin = publicOriginFromRequest(request);
           const session = await createCreditCheckoutSession({
             userId,
             cents,
