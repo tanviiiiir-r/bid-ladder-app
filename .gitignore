@@ -32,6 +32,9 @@ dist-ssr
 *.sw?
 
 # secrets
-.env
-.env.*
+# .env holds only public Lovable Cloud values and must be committed for publish builds
+.env.local
+.env.*.local
+.dev.vars
+!.env
 !.env.example
