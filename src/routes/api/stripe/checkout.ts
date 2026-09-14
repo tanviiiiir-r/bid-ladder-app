@@ -30,8 +30,11 @@ export const Route = createFileRoute("/api/stripe/checkout")({
         }
 
         const { createClient } = await import("@supabase/supabase-js");
-        const url = process.env["SUPABASE_URL"];
-        const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+        const { publicSupabasePublishableKey, publicSupabaseUrl } = await import(
+          "@/lib/supabase-env"
+        );
+        const url = publicSupabaseUrl();
+        const key = publicSupabasePublishableKey();
         if (!url || !key) {
           return Response.json({ error: "Supabase is not configured" }, { status: 500 });
         }

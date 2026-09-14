@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { publicSupabasePublishableKey, publicSupabaseUrl } from "@/lib/supabase-env";
 
 function isNewApiKey(value: string) {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -10,8 +11,13 @@ function isNewApiKey(value: string) {
  * RLS applies as `anon` — never use for privileged work.
  */
 export function createPublicSupabase() {
-  const url = process.env["SUPABASE_URL"]!;
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  const url = publicSupabaseUrl();
+  const key = publicSupabasePublishableKey();
+  if (!url || !key) {
+    throw new Error(
+      "Missing Supabase environment variable(s): SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY. Set them in .env.local or the host environment.",
+    );
+  }
 
   return createClient<Database>(url, key, {
     global: {
