@@ -40,22 +40,22 @@ export function AllocationControl({
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <Button
           type="button"
-          variant="secondary"
-          size="icon"
-          aria-label={`Decrease by ${formatCents(RANKING.incrementCents)}`}
+        variant="outline"
+        size="icon"
+        aria-label={`Decrease by ${formatCents(RANKING.incrementCents)}`}
           disabled={draftCents <= RANKING.minVisibleCents}
           onClick={() => setDraftCents((cents) => Math.max(0, cents - RANKING.incrementCents))}
         >
           <Minus className="size-4" />
         </Button>
-        <span className="rank-number min-w-24 text-center text-lg font-semibold">
+        <span className="allocation-price min-w-24 text-center text-lg">
           {formatCents(draftCents)}
         </span>
         <Button
           type="button"
-          variant="secondary"
-          size="icon"
-          aria-label={`Increase by ${formatCents(RANKING.incrementCents)}`}
+        variant="outline"
+        size="icon"
+        aria-label={`Increase by ${formatCents(RANKING.incrementCents)}`}
           onClick={() => setDraftCents((cents) => cents + RANKING.incrementCents)}
         >
           <Plus className="size-4" />

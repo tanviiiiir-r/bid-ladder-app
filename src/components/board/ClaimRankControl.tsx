@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Coins, Crown, Wallet } from "lucide-react";
+import { Coins, Wallet } from "lucide-react";
 
 import { AmountStepper, snapAllocationCents } from "@/components/board/AmountStepper";
 import { Button } from "@/components/ui/button";
@@ -24,21 +24,20 @@ export function ClaimRankControl({
   const buySearch = { cents: previewCents } as const;
 
   return (
-    <div className="mt-1 rounded-2xl border border-primary/30 bg-surface/70 p-5 shadow-[var(--shadow-card)] sm:p-6">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="surface-card p-6 sm:p-8">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            <Crown className="size-3.5 text-primary" />
+          <span className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
             {previewRank == null ? "Below the board" : `Claim #${previewRank}`}
           </span>
-          <div className="mt-3">
+          <div className="mt-4">
             <AmountStepper
               valueCents={draftCents}
               onChange={setDraftCents}
               disabled={archived}
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-3 max-w-md text-sm text-muted-foreground">
             {archived
               ? "This Daily board is archived. Switch to today to claim a rank."
               : previewRank == null
@@ -56,7 +55,7 @@ export function ClaimRankControl({
                 : `Buy credits · Claim #${previewRank}`}
             </Link>
           </Button>
-          <Button size="lg" variant="secondary" className="w-full" disabled={archived} asChild>
+          <Button size="lg" variant="outline" className="w-full" disabled={archived} asChild>
             <Link to="/credits/buy" search={{ ...buySearch, method: "points" }}>
               <Coins className="size-4" />
               Buy with points

@@ -31,9 +31,9 @@ export function ListingCard({ listing }: { listing: BoardListing }) {
   const age = timeAgo(listing.approvedAt);
 
   return (
-    <article className="group relative flex gap-3 rounded-xl border border-border bg-card p-[var(--board-row-pad)] shadow-[var(--shadow-card)] transition-colors hover:border-primary/40">
+    <article className="group relative flex gap-4 border-t-[0.5px] border-border p-[var(--board-row-pad)]">
       <div className="flex w-8 shrink-0 flex-col items-center gap-1 sm:w-10">
-        <span className="rank-number text-lg font-semibold leading-none text-primary sm:text-xl">
+        <span className="rank-number text-lg leading-none sm:text-xl">
           {listing.rank ?? "—"}
         </span>
         <MovementBadge rank={listing.rank} previousRank={listing.previousRank} />
@@ -46,11 +46,11 @@ export function ListingCard({ listing }: { listing: BoardListing }) {
               <Link
                 to="/l/$slug"
                 params={{ slug: listing.slug }}
-                className="truncate font-display text-sm font-semibold text-foreground hover:text-primary sm:text-base"
+                className="truncate text-sm font-medium text-foreground hover:underline sm:text-base"
               >
                 {listing.name}
               </Link>
-              <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="shrink-0 rounded-md border-[0.5px] border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                 {listing.categoryName}
               </span>
             </div>
@@ -69,8 +69,8 @@ export function ListingCard({ listing }: { listing: BoardListing }) {
           </div>
         </div>
 
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground/70">
-          <span className="font-medium text-primary">
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          <span className="font-medium text-foreground">
             {isFirst
               ? "Holding #1"
               : overtakeCents > 0
@@ -91,13 +91,13 @@ export function ListingCard({ listing }: { listing: BoardListing }) {
             <Share2 className="size-3" />
             {listing.shares}
           </span>
-          <span className="text-muted-foreground/60">watch-only</span>
-          {age ? <span className="text-muted-foreground/60">{age}</span> : null}
+          <span>watch-only</span>
+          {age ? <span>{age}</span> : null}
           <a
             href={listing.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-foreground/80 hover:text-primary"
+            className="inline-flex items-center gap-1 text-foreground hover:underline"
           >
             {host ?? "Visit"}
             <ExternalLink className="size-3" />

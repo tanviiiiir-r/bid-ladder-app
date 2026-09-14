@@ -87,15 +87,15 @@ function AuthPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto w-full max-w-md px-4 py-12">
-        <h1 className="text-2xl font-bold">
+        <h1 className="font-display text-[2rem] leading-tight">
           {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           You only need an account to submit and manage listings. Browsing the board is always open.
         </p>
 
-        <div className="mt-6 rounded-xl border border-border bg-card p-5">
-          <Button variant="secondary" className="w-full" onClick={handleGoogle}>
+        <div className="mt-6 surface-card p-6">
+          <Button variant="outline" className="w-full" onClick={handleGoogle}>
             Continue with Google
           </Button>
 

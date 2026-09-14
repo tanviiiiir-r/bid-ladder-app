@@ -5,22 +5,24 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Bid Ladder design system — Outbid structure, own gold.
- * Allocation prices use --allocation (gold), never --fall / coral.
- * All colors are oklch semantic tokens. Never hardcode hex in components.
+ * Bid Ladder visual language — Arena
+ * Refero Linear (90ce5883-bb24-4466-93f7-801cd617b0d1) as the ingredient.
+ *
+ * Midnight board. Acid lime is the only action / money color:
+ * Claim, Buy, Pay, allocated dollars, active board tab. Never links, badges, or chrome.
  */
 
 @theme inline {
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 0.75rem;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
@@ -56,87 +58,102 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --shadow-glow: 0 0 0 1px var(--primary-soft), 0 18px 50px -24px var(--primary-soft);
-  --shadow-card: 0 1px 0 0 var(--border), 0 24px 48px -32px oklch(0 0 0 / 0.8);
-  --board-max: 64rem;
-  --board-row-pad: 1rem;
+  --shadow-glow: none;
+  --shadow-card: none;
+  --board-max: 80rem;
+  --board-row-pad: 1.125rem;
 }
 
 :root {
-  --radius: 0.75rem;
-  --background: oklch(0.98 0.004 264);
-  --foreground: oklch(0.21 0.015 264);
-  --surface: oklch(0.96 0.006 264);
-  --surface-foreground: oklch(0.21 0.015 264);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.015 264);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.015 264);
-  --primary: oklch(0.72 0.16 60);
-  --primary-foreground: oklch(0.19 0.03 60);
-  --primary-soft: oklch(0.72 0.16 60 / 0.22);
-  --secondary: oklch(0.94 0.008 264);
-  --secondary-foreground: oklch(0.25 0.015 264);
-  --muted: oklch(0.94 0.008 264);
-  --muted-foreground: oklch(0.5 0.016 264);
-  --accent: oklch(0.92 0.012 264);
-  --accent-foreground: oklch(0.25 0.015 264);
-  --destructive: oklch(0.58 0.21 25);
-  --destructive-foreground: oklch(0.99 0.005 264);
-  --rise: oklch(0.58 0.15 152);
-  --fall: oklch(0.57 0.2 22);
-  --allocation: oklch(0.72 0.16 60);
-  --allocation-foreground: oklch(0.19 0.03 60);
-  --border: oklch(0.21 0.015 264 / 12%);
-  --input: oklch(0.21 0.015 264 / 16%);
-  --ring: oklch(0.72 0.16 60 / 0.5);
-  --sidebar: oklch(0.96 0.006 264);
-  --sidebar-foreground: oklch(0.21 0.015 264);
-  --sidebar-primary: oklch(0.72 0.16 60);
-  --sidebar-primary-foreground: oklch(0.19 0.03 60);
-  --sidebar-accent: oklch(0.92 0.012 264);
-  --sidebar-accent-foreground: oklch(0.25 0.015 264);
-  --sidebar-border: oklch(0.21 0.015 264 / 12%);
-  --sidebar-ring: oklch(0.72 0.16 60 / 0.5);
+  --radius: 0.375rem;
+  --void: #08090a;
+  --panel: #0f1011;
+  --line: #23252a;
+  --ink: #ffffff;
+  --fog: #8a8f98;
+  --ghost: #d0d6e0;
+  --lime: #e4f222;
+
+  --background: var(--void);
+  --foreground: var(--ink);
+  --surface: var(--panel);
+  --surface-foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: #121314;
+  --popover-foreground: var(--ink);
+  --primary: var(--lime);
+  --primary-foreground: #08090a;
+  --primary-soft: rgb(228 242 34 / 0.14);
+  --secondary: #ffffff;
+  --secondary-foreground: #08090a;
+  --muted: #141516;
+  --muted-foreground: var(--fog);
+  --accent: #141516;
+  --accent-foreground: var(--ink);
+  --destructive: #f97066;
+  --destructive-foreground: #08090a;
+  --rise: var(--ink);
+  --fall: var(--fog);
+  --allocation: var(--lime);
+  --allocation-foreground: #08090a;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: rgb(228 242 34 / 0.45);
+  --sidebar: var(--panel);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--lime);
+  --sidebar-primary-foreground: #08090a;
+  --sidebar-accent: #141516;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: rgb(228 242 34 / 0.45);
 }
 
-.dark {
-  --background: oklch(0.16 0.012 264);
-  --foreground: oklch(0.97 0.005 264);
-  --surface: oklch(0.2 0.014 264);
-  --surface-foreground: oklch(0.97 0.005 264);
-  --card: oklch(0.212 0.015 264);
-  --card-foreground: oklch(0.97 0.005 264);
-  --popover: oklch(0.212 0.015 264);
-  --popover-foreground: oklch(0.97 0.005 264);
-  --primary: oklch(0.79 0.163 68);
-  --primary-foreground: oklch(0.19 0.03 60);
-  --primary-soft: oklch(0.79 0.163 68 / 0.25);
-  --secondary: oklch(0.26 0.016 264);
-  --secondary-foreground: oklch(0.97 0.005 264);
-  --muted: oklch(0.25 0.014 264);
-  --muted-foreground: oklch(0.68 0.018 264);
-  --accent: oklch(0.28 0.02 264);
-  --accent-foreground: oklch(0.97 0.005 264);
-  --destructive: oklch(0.62 0.21 25);
-  --destructive-foreground: oklch(0.98 0.005 264);
-  --rise: oklch(0.78 0.17 152);
-  --fall: oklch(0.68 0.18 22);
-  --allocation: oklch(0.84 0.16 68);
-  --allocation-foreground: oklch(0.19 0.03 60);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 13%);
-  --ring: oklch(0.79 0.163 68 / 0.6);
-  --sidebar: oklch(0.2 0.014 264);
-  --sidebar-foreground: oklch(0.97 0.005 264);
-  --sidebar-primary: oklch(0.79 0.163 68);
-  --sidebar-primary-foreground: oklch(0.19 0.03 60);
-  --sidebar-accent: oklch(0.26 0.016 264);
-  --sidebar-accent-foreground: oklch(0.97 0.005 264);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.79 0.163 68 / 0.6);
-}
+.light {
+  --void: #f7f8f8;
+  --panel: #ffffff;
+  --line: #d0d6e0;
+  --ink: #08090a;
+  --fog: #6b6f76;
+  --ghost: #8a8f98;
+  --lime: #e4f222;
 
+  --background: var(--void);
+  --foreground: var(--ink);
+  --surface: var(--panel);
+  --surface-foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: var(--panel);
+  --popover-foreground: var(--ink);
+  --primary: var(--lime);
+  --primary-foreground: #08090a;
+  --primary-soft: rgb(228 242 34 / 0.18);
+  --secondary: var(--ink);
+  --secondary-foreground: var(--void);
+  --muted: #eceef0;
+  --muted-foreground: var(--fog);
+  --accent: #eceef0;
+  --accent-foreground: var(--ink);
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --rise: var(--ink);
+  --fall: var(--fog);
+  --allocation: var(--lime);
+  --allocation-foreground: #08090a;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: rgb(8 9 10 / 0.22);
+  --sidebar: var(--panel);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--lime);
+  --sidebar-primary-foreground: #08090a;
+  --sidebar-accent: #eceef0;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: rgb(8 9 10 / 0.22);
+}
 
 @layer base {
   * {
@@ -147,6 +164,8 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -155,24 +174,34 @@
   h3,
   .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    line-height: 1.05;
   }
 }
 
 @utility board-grid-bg {
-  background-image:
-    radial-gradient(120% 80% at 50% -10%, var(--primary-soft), transparent 60%),
-    linear-gradient(to bottom, oklch(1 0 0 / 3%), transparent 220px);
+  background-color: var(--color-background);
+}
+
+@utility surface-card {
+  border-radius: 0.75rem;
+  background-color: var(--color-card);
+  border: 0.5px solid var(--color-border);
 }
 
 @utility rank-number {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--color-allocation);
 }
 
 @utility allocation-price {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: -0.04em;
   color: var(--color-allocation);
 }

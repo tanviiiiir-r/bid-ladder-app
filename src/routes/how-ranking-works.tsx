@@ -41,14 +41,16 @@ function HowRankingWorksPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-8">
-        <h1 className="text-3xl font-bold sm:text-4xl">How ranking works</h1>
+        <h1 className="font-display text-[2.5rem] leading-[1.08] tracking-[-0.02em] sm:text-5xl">
+          How ranking works
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground sm:text-base">
           Ranking {RANKING.version}. This page documents exactly what the board computes today. If
           the rules change, this page changes with it.
         </p>
 
-        <section className="mt-8 rounded-xl border border-primary/30 bg-primary/5 p-5">
-          <h2 className="font-display text-lg font-semibold">{HEADLINE}</h2>
+        <section className="mt-8 surface-card p-6">
+          <h2 className="font-display text-[2rem] leading-tight">{HEADLINE}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Higher allocation ranks higher. When two listings hold the same amount, the one that got
             there first ranks above — ties break on the earlier allocation time, then on a stable
@@ -56,9 +58,9 @@ function HowRankingWorksPage() {
           </p>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-card p-5">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-            <Coins className="size-4 text-primary" />
+        <section className="mt-6 surface-card p-6">
+          <h2 className="flex items-center gap-2 font-display text-2xl">
+            <Coins className="size-4" />
             The rules
           </h2>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -75,9 +77,9 @@ function HowRankingWorksPage() {
           </ul>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-card p-5">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-            <CalendarDays className="size-4 text-primary" />
+        <section className="mt-6 surface-card p-6">
+          <h2 className="flex items-center gap-2 font-display text-2xl">
+            <CalendarDays className="size-4" />
             The three boards
           </h2>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -96,9 +98,9 @@ function HowRankingWorksPage() {
           </ul>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-surface p-5">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-            <Eye className="size-4 text-muted-foreground" />
+        <section className="mt-6 surface-card p-6">
+          <h2 className="flex items-center gap-2 font-display text-2xl">
+            <Eye className="size-4" />
             Views and shares are watch-only
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -108,23 +110,23 @@ function HowRankingWorksPage() {
           </p>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-card p-5">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-            <Ban className="size-4 text-fall" />
+        <section className="mt-6 surface-card p-6">
+          <h2 className="flex items-center gap-2 font-display text-2xl">
+            <Ban className="size-4" />
             What never affects rank
           </h2>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {notCounted.map((item) => (
               <li key={item} className="flex gap-2">
-                <span className="text-fall">•</span>
+                <span className="text-muted-foreground">•</span>
                 {item}
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-card p-5">
-          <h2 className="font-display text-lg font-semibold">Movement (↑ / ↓)</h2>
+        <section className="mt-6 surface-card p-6">
+          <h2 className="font-display text-2xl">Movement (↑ / ↓)</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Every badge compares a listing to its position at the previous recompute. A listing with
             no previous position shows “New”.
@@ -136,7 +138,7 @@ function HowRankingWorksPage() {
           </p>
         </section>
 
-        <Link to="/" className="mt-8 inline-block text-sm text-primary">
+        <Link to="/" className="mt-8 inline-block text-sm text-foreground underline-offset-2 hover:underline">
           ← Back to the board
         </Link>
       </main>

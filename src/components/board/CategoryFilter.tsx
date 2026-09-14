@@ -20,10 +20,10 @@ export function CategoryFilter({ categories, active, onChange }: Props) {
           onClick={() => onChange(option.slug)}
           aria-pressed={active === option.slug}
           className={cn(
-            "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+            "shrink-0 rounded-md border-[0.5px] px-2.5 py-1 text-xs font-medium tracking-[-0.011em] transition-colors",
             active === option.slug
               ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+              : "border-border bg-transparent text-muted-foreground hover:text-foreground",
           )}
         >
           {option.name}

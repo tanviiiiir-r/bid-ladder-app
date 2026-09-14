@@ -10,7 +10,7 @@ type Props = {
 };
 
 const neutral =
-  "inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground";
+  "inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground";
 
 /**
  * Movement vs the previous ranking recompute. Real persisted ranks only,
@@ -44,8 +44,8 @@ export function MovementBadge({ rank, previousRank, className }: Props) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
-        up ? "bg-rise/15 text-rise" : "bg-fall/15 text-fall",
+        "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium",
+        up ? "text-foreground" : "text-muted-foreground",
         className,
       )}
       title={

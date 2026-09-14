@@ -63,14 +63,14 @@ function SubmitPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto w-full max-w-xl px-4 pb-16 pt-8">
-        <h1 className="text-2xl font-bold">Submit your product</h1>
+        <h1 className="font-display text-[2rem] leading-tight">Submit your product</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Every submission is reviewed before it appears on the board. Ranking starts only once real
           people show up.
         </p>
 
         <form
-          className="mt-6 flex flex-col gap-5 rounded-xl border border-border bg-card p-5"
+          className="mt-6 flex flex-col gap-5 surface-card p-6"
           onSubmit={(event) => {
             event.preventDefault();
             if (!form.categoryId) {

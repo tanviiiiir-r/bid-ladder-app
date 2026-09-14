@@ -136,8 +136,8 @@ function CreditTools() {
 
   return (
     <section className="mt-8 grid gap-3 sm:grid-cols-2">
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h2 className="font-display text-sm font-semibold">Grant credits</h2>
+      <div className="surface-card p-5">
+        <h2 className="text-sm font-medium">Grant credits</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Positive multiples of {formatCents(RANKING.incrementCents)}. Logged to the credit ledger.
         </p>
@@ -164,8 +164,8 @@ function CreditTools() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h2 className="font-display text-sm font-semibold">Grant points</h2>
+      <div className="surface-card p-5">
+        <h2 className="text-sm font-medium">Grant points</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Whole points. 1 point converts to 1 cent of credits.
         </p>
@@ -192,8 +192,8 @@ function CreditTools() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h2 className="font-display text-sm font-semibold">Set allocation</h2>
+      <div className="surface-card p-5">
+        <h2 className="text-sm font-medium">Set allocation</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           0 leaves the board. Otherwise at least {formatCents(RANKING.minVisibleCents)} in{" "}
           {formatCents(RANKING.incrementCents)} steps.
@@ -235,8 +235,8 @@ type QueueListing = Awaited<ReturnType<typeof getReviewQueue>>[number];
 type AuditEntry = Awaited<ReturnType<typeof getAuditLog>>[number];
 
 const statusStyles: Record<string, string> = {
-  pending: "bg-primary/15 text-primary",
-  approved: "bg-rise/15 text-rise",
+  pending: "bg-muted text-muted-foreground",
+  approved: "bg-muted text-foreground",
   rejected: "bg-fall/15 text-fall",
 };
 
@@ -273,7 +273,7 @@ function AdminPage() {
       <div className="min-h-screen">
         <SiteHeader />
         <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-          <h1 className="font-display text-xl font-semibold">Admins only</h1>
+          <h1 className="font-display text-3xl">Admins only</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             This account doesn't have review access.
           </p>
@@ -291,7 +291,7 @@ function AdminPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">Review queue</h1>
+          <h1 className="font-display text-[2rem] leading-tight">Review queue</h1>
           <Button
             size="sm"
             variant="secondary"
@@ -314,9 +314,9 @@ function AdminPage() {
             </p>
           ) : (
             pending.map((listing) => (
-              <article key={listing.id} className="rounded-xl border border-border bg-card p-4">
+              <article key={listing.id} className="surface-card p-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-display text-base font-semibold">{listing.name}</h3>
+                  <h3 className="font-display text-xl">{listing.name}</h3>
                   <span className="text-[11px] text-muted-foreground">
                     {listing.categories?.name}
                   </span>
@@ -326,7 +326,7 @@ function AdminPage() {
                   href={listing.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 inline-block break-all text-xs text-primary"
+                  className="mt-1 inline-block break-all text-xs text-foreground underline-offset-2 hover:underline"
                 >
                   {listing.url}
                 </a>
@@ -385,7 +385,7 @@ function AdminPage() {
               <span className="font-medium">{listing.name}</span>
               <span
                 className={cn(
-                  "rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize",
+                  "rounded-md px-2 py-0.5 text-[11px] font-medium capitalize",
                   statusStyles[listing.status],
                 )}
               >
