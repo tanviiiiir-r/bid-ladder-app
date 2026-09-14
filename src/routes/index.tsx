@@ -51,6 +51,7 @@ export const Route = createFileRoute("/")({
       context.queryClient.ensureQueryData(categoriesQuery()),
       context.queryClient.ensureQueryData(dailyArchiveDatesQuery()),
       context.queryClient.ensureQueryData(boardQuery(deps.category, deps.board, deps.date)),
+      context.queryClient.ensureQueryData(boardQuery(deps.category, "today")),
     ]);
   },
   head: () => ({
