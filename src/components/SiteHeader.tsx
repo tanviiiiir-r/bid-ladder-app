@@ -27,7 +27,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/85 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 px-4">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
             <LayoutList className="size-4" />
@@ -39,7 +39,12 @@ export function SiteHeader() {
 
         <nav className="flex items-center gap-1 sm:gap-2">
           <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
-            <Link to="/how-ranking-works">How ranking works</Link>
+            <Link to="/" search={{ board: "daily" }}>
+              Daily
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
+            <Link to="/how-ranking-works">Rules</Link>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="sm:hidden">
