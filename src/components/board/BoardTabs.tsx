@@ -18,7 +18,7 @@ export function BoardTabs({
     <div
       role="tablist"
       aria-label="Board"
-      className="inline-flex w-full max-w-sm items-center gap-1 rounded-full border border-border bg-surface p-1"
+      className="inline-flex w-full min-w-0 max-w-sm items-center gap-1 rounded-full border border-border bg-card p-1"
     >
       {BOARDS.map((board) => {
         const isActive = board === active;

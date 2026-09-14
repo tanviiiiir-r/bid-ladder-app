@@ -175,33 +175,44 @@ function BoardPage() {
             <RanksFreshness listings={listings} />
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <BoardTabs active={board} onChange={(next) => setSearch({ board: next })} />
+          <RisingStrip listings={listings} />
+
+          <div className="mt-6 rounded-2xl border border-border bg-surface/60 p-3 sm:p-4">
+            <div className="grid grid-cols-1 items-center gap-3 sm:flex sm:justify-between">
+              <BoardTabs active={board} onChange={(next) => setSearch({ board: next })} />
+              {board === "daily" ? (
+                <Select value={selectedDate} onValueChange={(value) => setSearch({ date: value })}>
+                  <SelectTrigger className="w-full shrink-0 sm:w-[210px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dateOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option === today ? `${option} · today (live)` : `${option} · archive`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : null}
+            </div>
+
+            <div className="mt-3 border-t border-border pt-3">
+              <CategoryFilter
+                categories={categories}
+                active={category}
+                onChange={(slug) => setSearch({ category: slug })}
+              />
+            </div>
+
             {board === "daily" ? (
-              <Select value={selectedDate} onValueChange={(value) => setSearch({ date: value })}>
-                <SelectTrigger className="w-full sm:w-[210px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {dateOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option === today ? `${option} · today (live)` : option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {selectedDate === today
+                  ? `${selectedDate} is today's live UTC board — positions can still change until UTC midnight.`
+                  : `${selectedDate} is a frozen archive of that closed UTC day. It no longer updates.`}
+              </p>
             ) : null}
           </div>
 
-          <RisingStrip listings={listings} />
-
-          <div className="mt-5">
-            <CategoryFilter
-              categories={categories}
-              active={category}
-              onChange={(slug) => setSearch({ category: slug })}
-            />
-          </div>
 
           {listings.length > 0 && listings.length <= 3 ? (
             <p className="mt-5 rounded-lg border border-border bg-surface/60 px-3 py-2 text-xs text-muted-foreground">
