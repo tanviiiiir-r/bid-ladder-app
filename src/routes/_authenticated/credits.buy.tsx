@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Coins, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
+import { AmountStepper, snapAllocationCents } from "@/components/board/AmountStepper";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { convertPointsToCredits, getMyWallet } from "@/lib/allocation.functions";
@@ -60,20 +61,24 @@ function BuyCreditsPage() {
   const neededCents = useMemo(() => {
     const fallback = RANKING.minVisibleCents;
     const value = rawCents ?? fallback;
-    return Math.max(
-      RANKING.minVisibleCents,
-      Math.round(value / RANKING.incrementCents) * RANKING.incrementCents,
-    );
+    return snapAllocationCents(value);
   }, [rawCents]);
+
+  const [draftCents, setDraftCents] = useState(neededCents);
+  useEffect(() => {
+    setDraftCents(neededCents);
+  }, [neededCents]);
+
+  const chargeCents = snapAllocationCents(draftCents);
 
   const wallet = useQuery({ queryKey: ["my-wallet"], queryFn: () => getMyWallet() });
   const stripe = useQuery({ queryKey: ["stripe-status"], queryFn: () => getStripeStatus() });
 
   const availablePoints = wallet.data?.availablePoints ?? 0;
   const availableCents = wallet.data?.availableCents ?? 0;
-  const neededPoints = pointsForCents(neededCents);
+  const neededPoints = pointsForCents(chargeCents);
   const funding = planRankFunding({
-    neededCents,
+    neededCents: chargeCents,
     availableCents,
     availablePoints,
     method,
@@ -90,13 +95,23 @@ function BuyCreditsPage() {
   });
 
   const checkout = useMutation({
-    mutationFn: (cents: number) =>
-      createStripeCheckout({
-        data: {
-          cents,
-          method,
-        },
-      }),
+    mutationFn: async (cents: number) => {
+      const timeout = new Promise<never>((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Stripe is taking too long. Refresh and try again.")),
+          25_000,
+        );
+      });
+      return Promise.race([
+        createStripeCheckout({
+          data: {
+            cents,
+            method,
+          },
+        }),
+        timeout,
+      ]);
+    },
     onSuccess: (result) => {
       window.location.assign(result.url);
     },
@@ -106,7 +121,19 @@ function BuyCreditsPage() {
   const busy = convert.isPending || checkout.isPending;
   const stripeReady = stripe.data?.configured ?? false;
 
+  function commitAmount(next: number) {
+    setDraftCents(next);
+    const snapped = snapAllocationCents(next);
+    if (snapped !== next) return;
+    void navigate({
+      to: "/credits/buy",
+      search: (prev) => ({ ...prev, cents: snapped, method }),
+      replace: true,
+    });
+  }
+
   async function handleConfirm() {
+    commitAmount(draftCents);
     if (method === "points" && applyPoints > 0) {
       await convert.mutateAsync(applyPoints);
     }
@@ -117,6 +144,10 @@ function BuyCreditsPage() {
           : "You already have enough credits. Allocate them on an approved listing.",
       );
       navigate({ to: "/dashboard", search: { converted: applyPoints > 0 } });
+      return;
+    }
+    if (stripe.isLoading) {
+      toast.error("Checking Stripe… wait a moment and tap Pay again.");
       return;
     }
     if (!stripeReady) {
@@ -134,8 +165,7 @@ function BuyCreditsPage() {
           {method === "points" ? "Buy with points" : "Buy with credits"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Credits land in your wallet. Allocate them on an approved listing to take the rank you
-          previewed.
+          Edit the amount, pay, then allocate credits on an approved listing to take that rank.
         </p>
 
         {canceled ? (
@@ -145,10 +175,13 @@ function BuyCreditsPage() {
         ) : null}
 
         <section className="mt-6 rounded-xl border border-border bg-card p-5">
-          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Selected rank</p>
-          <p className="allocation-price mt-1 text-4xl leading-none">{formatCents(neededCents)}</p>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Amount</p>
+          <div className="mt-3">
+            <AmountStepper valueCents={draftCents} onChange={commitAmount} size="md" />
+          </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            1 point = 1 cent. Minimum top-up step {formatCents(RANKING.incrementCents)}.
+            Type the dollar amount or use +/−. 1 point = 1 cent. Minimum{" "}
+            {formatCents(RANKING.minVisibleCents)}.
           </p>
 
           <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
@@ -191,7 +224,11 @@ function BuyCreditsPage() {
             </p>
           )}
 
-          {!stripeReady && leftoverCents > 0 ? (
+          {stripe.isLoading && leftoverCents > 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">Checking Stripe…</p>
+          ) : null}
+
+          {!stripe.isLoading && !stripeReady && leftoverCents > 0 ? (
             <p className="mt-4 rounded-lg border border-fall/40 bg-fall/10 px-3 py-2 text-sm text-fall">
               Checkout is not configured. Set <code>STRIPE_SECRET_KEY</code> and{" "}
               <code>STRIPE_WEBHOOK_SECRET</code> to take card payments.
@@ -202,7 +239,9 @@ function BuyCreditsPage() {
             <Button className="sm:flex-1" disabled={busy} onClick={() => void handleConfirm()}>
               {method === "points" ? <Coins className="size-4" /> : <Wallet className="size-4" />}
               {busy
-                ? "Working…"
+                ? checkout.isPending
+                  ? "Opening Stripe…"
+                  : "Working…"
                 : leftoverCents === 0
                   ? method === "points" && applyPoints > 0
                     ? "Convert points"
