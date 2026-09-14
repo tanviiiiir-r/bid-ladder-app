@@ -54,5 +54,4 @@ Light and dark both use the gold allocation color. Dark stays a trading-floor ch
 
 ## Owners
 
-- Cursor: tokens, this file, ranking copy constants
-- Lovable: restyle one screen at a time against this contract; stay on Vite
+- Cursor: tokens, this file, ranking copy constants, and UI restyles against this contract

@@ -11,6 +11,7 @@ import { trackEvent } from "@/lib/board.functions";
 import { formatCents } from "@/lib/format";
 import { boardQuery, listingQuery } from "@/lib/queries";
 import { BOARDS, RANKING, type BoardKind } from "@/lib/ranking";
+import { publicSiteUrl } from "@/lib/site-url";
 
 type ListingSearch = { board?: BoardKind; date?: string };
 
@@ -54,13 +55,16 @@ export const Route = createFileRoute("/l/$slug")({
         ? `${listing.name} — on Bid Ladder (rank pending)`
         : `#${listing.rank} on Bid Ladder — ${listing.name}`;
     const description = `${listing.tagline} · Credits allocated to a listing determine its rank on Bid Ladder.`;
-    const url = `https://rising-star-board.lovable.app/l/${params.slug}`;
+    const origin = publicSiteUrl();
+    const url = origin ? `${origin}/l/${params.slug}` : `/l/${params.slug}`;
     // Versioned by real rank + recompute time so a cached card can never claim
     // a rank the database has already moved past.
     const version = encodeURIComponent(
       `${listing.rank ?? "na"}-${listing.computedAt ?? "pending"}`,
     );
-    const image = `https://rising-star-board.lovable.app/api/public/og/l/${params.slug}?v=${version}`;
+    const image = origin
+      ? `${origin}/api/public/og/l/${params.slug}?v=${version}`
+      : `/api/public/og/l/${params.slug}?v=${version}`;
     return {
       meta: [
         { title },

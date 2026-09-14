@@ -12,7 +12,7 @@
  *   #1 take   = current #1 allocation + 500 cents
  *
  * Retired organic weights below are NOT used in rank calculation. They stay
- * on this object so existing Lovable screens that still read them compile.
+ * on this object so existing screens that still read them compile.
  */
 export const RANKING = {
   version: "v0.2",

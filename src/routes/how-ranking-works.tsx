@@ -4,8 +4,12 @@ import { Ban, CalendarDays, Coins, Eye } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { formatCents } from "@/lib/format";
 import { RANKING, MOVEMENT } from "@/lib/ranking";
+import { publicSiteUrl } from "@/lib/site-url";
 
-const URL = "https://rising-star-board.lovable.app/how-ranking-works";
+function rankingPageUrl() {
+  const origin = publicSiteUrl();
+  return origin ? `${origin}/how-ranking-works` : "/how-ranking-works";
+}
 const HEADLINE = "Credits allocated to a listing determine its rank.";
 
 export const Route = createFileRoute("/how-ranking-works")({
@@ -22,9 +26,9 @@ export const Route = createFileRoute("/how-ranking-works")({
         content: `${HEADLINE} Minimum ${formatCents(RANKING.minVisibleCents)} to appear, ${formatCents(RANKING.incrementCents)} steps.`,
       },
       { property: "og:type", content: "article" },
-      { property: "og:url", content: URL },
+      { property: "og:url", content: rankingPageUrl() },
     ],
-    links: [{ rel: "canonical", href: URL }],
+    links: [{ rel: "canonical", href: rankingPageUrl() }],
   }),
   component: HowRankingWorksPage,
 });
