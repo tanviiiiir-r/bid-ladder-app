@@ -107,6 +107,7 @@ function BoardPage() {
   const { data: categories } = useSuspenseQuery(categoriesQuery());
   const { data: archiveDates } = useSuspenseQuery(dailyArchiveDatesQuery());
   const { data: listings } = useSuspenseQuery(boardQuery(category, board, date));
+  const { data: todayListings } = useSuspenseQuery(boardQuery(category, "today"));
   useBoardRealtime();
 
   const today = utcDateString();
