@@ -136,21 +136,41 @@ function BoardPage() {
               {formatCents(RANKING.numberOnePremiumCents)} more than the leader to take #1.
             </p>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link to="/submit">
-                  <Crown className="size-4" />
-                  Claim #1 for {formatCents(claimFirstCents)}+
-                </Link>
-              </Button>
-              <Link
-                to="/how-ranking-works"
-                className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
-              >
-                <Scale className="size-3.5" />
-                How ranking works
-              </Link>
+            <div className="mt-1 rounded-2xl border border-primary/30 bg-surface/70 p-5 shadow-[var(--shadow-card)] sm:p-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <Crown className="size-3.5 text-primary" />
+                    Claim #1
+                  </span>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="allocation-price text-5xl leading-none sm:text-6xl">
+                      {formatCents(claimFirstCents)}
+                    </span>
+                    <span className="allocation-price text-2xl leading-none sm:text-3xl">+</span>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Live cost to take the top position on this board.
+                  </p>
+                </div>
+
+                <Button asChild size="lg" className="w-full shrink-0 sm:w-auto">
+                  <Link to="/submit">
+                    <Crown className="size-4" />
+                    Claim #1 for {formatCents(claimFirstCents)}+
+                  </Link>
+                </Button>
+              </div>
             </div>
+
+            <Link
+              to="/how-ranking-works"
+              className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+            >
+              <Scale className="size-3.5" />
+              How ranking works
+            </Link>
+
 
             <RanksFreshness listings={listings} />
           </div>
