@@ -141,4 +141,37 @@ SELECT public.set_allocation('22222222-2222-4222-8222-222222222215', 1000);
 SELECT public.set_allocation('22222222-2222-4222-8222-222222222216', 1000);
 SELECT public.set_allocation('22222222-2222-4222-8222-222222222217', 1000);
 
+-- All-time keeps the set_allocation totals. Today is shifted so the boards
+-- do not look identical: Ledgerlift leads Today, Northstar stays All-time #1.
+UPDATE public.daily_allocations
+SET amount_cents = 8000
+WHERE listing_id = '22222222-2222-4222-8222-222222222201'
+  AND utc_date = (timezone('utc', now()))::date;
+
+UPDATE public.daily_allocations
+SET amount_cents = 2000
+WHERE listing_id = '22222222-2222-4222-8222-222222222203'
+  AND utc_date = (timezone('utc', now()))::date;
+
+INSERT INTO public.daily_allocations (listing_id, utc_date, amount_cents, first_allocated_at)
+VALUES
+  ('22222222-2222-4222-8222-222222222202', (timezone('utc', now()))::date - 1, 9000, now() - interval '1 day'),
+  ('22222222-2222-4222-8222-222222222201', (timezone('utc', now()))::date - 1, 4000, now() - interval '1 day' + interval '1 hour'),
+  ('22222222-2222-4222-8222-222222222205', (timezone('utc', now()))::date - 1, 2500, now() - interval '1 day' + interval '2 hour')
+ON CONFLICT (listing_id, utc_date) DO UPDATE SET
+  amount_cents = EXCLUDED.amount_cents,
+  first_allocated_at = EXCLUDED.first_allocated_at;
+
+INSERT INTO public.daily_rank_snapshots (
+  utc_date, listing_id, rank, allocation_cents, unique_views, shares, frozen_at
+)
+VALUES
+  ((timezone('utc', now()))::date - 1, '22222222-2222-4222-8222-222222222202', 1, 9000, 0, 0, ((timezone('utc', now()))::date)::timestamp AT TIME ZONE 'utc'),
+  ((timezone('utc', now()))::date - 1, '22222222-2222-4222-8222-222222222201', 2, 4000, 0, 0, ((timezone('utc', now()))::date)::timestamp AT TIME ZONE 'utc'),
+  ((timezone('utc', now()))::date - 1, '22222222-2222-4222-8222-222222222205', 3, 2500, 0, 0, ((timezone('utc', now()))::date)::timestamp AT TIME ZONE 'utc')
+ON CONFLICT (utc_date, listing_id) DO UPDATE SET
+  rank = EXCLUDED.rank,
+  allocation_cents = EXCLUDED.allocation_cents,
+  frozen_at = EXCLUDED.frozen_at;
+
 SELECT public.recompute_rankings();
