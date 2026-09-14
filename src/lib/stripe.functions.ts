@@ -16,7 +16,6 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       .object({
         cents: z.number().int().positive(),
         method: z.enum(["credits", "points"]).default("credits"),
-        origin: z.string().url(),
       })
       .parse(data),
   )
@@ -28,10 +27,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     if (!isStripeConfigured()) {
       throw new Error("Checkout is not configured. Set STRIPE_SECRET_KEY.");
     }
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const origin = new URL(getRequest().url).origin;
     return createCreditCheckoutSession({
       userId: context.userId,
       cents: data.cents,
-      origin: data.origin,
+      origin,
       method: data.method,
     });
   });

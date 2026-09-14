@@ -73,9 +73,9 @@ export async function applyCompletedCheckout(session: Stripe.Checkout.Session): 
   if (session.metadata?.["kind"] !== "credit_topup") return;
 
   const userId = session.metadata?.["user_id"];
-  const cents = Number(session.metadata?.["cents"] ?? session.amount_total ?? 0);
+  const cents = session.amount_total ?? 0;
   if (!userId || !Number.isInteger(cents) || cents <= 0) {
-    throw new Error("Checkout session is missing user or amount metadata.");
+    throw new Error("Checkout session is missing user or paid amount.");
   }
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

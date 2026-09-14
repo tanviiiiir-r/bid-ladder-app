@@ -30,8 +30,11 @@ export function ClaimRankControl({
     setDollarInput(centsToDollarInput(defaultCents));
   }, [defaultCents]);
 
-  const previewRank = previewRankForAmount(listings, draftCents);
-  const buySearch = { cents: draftCents } as const;
+  const typedDollars = Number(dollarInput);
+  const liveCents =
+    Number.isInteger(typedDollars) && typedDollars > 0 ? typedDollars * 100 : draftCents;
+  const previewRank = previewRankForAmount(listings, liveCents);
+  const buySearch = { cents: liveCents } as const;
 
   function applyCents(next: number) {
     const clamped = Math.max(RANKING.minVisibleCents, next);
@@ -114,8 +117,8 @@ export function ClaimRankControl({
             <Button size="lg" className="w-full shrink-0 sm:w-auto" disabled={archived}>
               <Crown className="size-4" />
               {previewRank == null
-                ? `Claim rank for ${formatCents(draftCents)}`
-                : `Claim #${previewRank} for ${formatCents(draftCents)}`}
+                ? `Claim rank for ${formatCents(liveCents)}`
+                : `Claim #${previewRank} for ${formatCents(liveCents)}`}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
@@ -127,7 +130,7 @@ export function ClaimRankControl({
                 <span className="flex flex-col">
                   <span>Buy with credits</span>
                   <span className="text-[11px] text-muted-foreground">
-                    Top up {formatCents(draftCents)} then allocate
+                    Top up {formatCents(liveCents)} then allocate
                   </span>
                 </span>
               </Link>
@@ -138,7 +141,7 @@ export function ClaimRankControl({
                 <span className="flex flex-col">
                   <span>Buy with points</span>
                   <span className="text-[11px] text-muted-foreground">
-                    {draftCents.toLocaleString("en-US")} pts, leftover via card
+                    {liveCents.toLocaleString("en-US")} pts, leftover via card
                   </span>
                 </span>
               </Link>

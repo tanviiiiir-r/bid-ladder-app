@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { convertPointsToCredits, getMyWallet } from "@/lib/allocation.functions";
 import { formatCents, formatPoints } from "@/lib/format";
-import { RANKING, pointsForCents } from "@/lib/ranking";
+import { RANKING, planRankFunding, pointsForCents } from "@/lib/ranking";
 import { createStripeCheckout, getStripeStatus } from "@/lib/stripe.functions";
 
 type BuySearch = {
@@ -61,7 +61,7 @@ function BuyCreditsPage() {
     const fallback = RANKING.minVisibleCents;
     const value = rawCents ?? fallback;
     return Math.max(
-      RANKING.incrementCents,
+      RANKING.minVisibleCents,
       Math.round(value / RANKING.incrementCents) * RANKING.incrementCents,
     );
   }, [rawCents]);
@@ -70,9 +70,16 @@ function BuyCreditsPage() {
   const stripe = useQuery({ queryKey: ["stripe-status"], queryFn: () => getStripeStatus() });
 
   const availablePoints = wallet.data?.availablePoints ?? 0;
+  const availableCents = wallet.data?.availableCents ?? 0;
   const neededPoints = pointsForCents(neededCents);
-  const applyPoints = method === "points" ? Math.min(availablePoints, neededPoints) : 0;
-  const leftoverCents = method === "points" ? Math.max(0, neededCents - applyPoints) : neededCents;
+  const funding = planRankFunding({
+    neededCents,
+    availableCents,
+    availablePoints,
+    method,
+  });
+  const applyPoints = funding.applyPoints;
+  const leftoverCents = funding.leftoverCents;
 
   const convert = useMutation({
     mutationFn: (points: number) => convertPointsToCredits({ data: { points } }),
@@ -88,7 +95,6 @@ function BuyCreditsPage() {
         data: {
           cents,
           method,
-          origin: window.location.origin,
         },
       }),
     onSuccess: (result) => {
@@ -105,8 +111,12 @@ function BuyCreditsPage() {
       await convert.mutateAsync(applyPoints);
     }
     if (leftoverCents === 0) {
-      toast.success("Points converted to credits. Allocate them on an approved listing.");
-      navigate({ to: "/dashboard", search: { converted: true } });
+      toast.success(
+        applyPoints > 0
+          ? "Points converted to credits. Allocate them on an approved listing."
+          : "You already have enough credits. Allocate them on an approved listing.",
+      );
+      navigate({ to: "/dashboard", search: { converted: applyPoints > 0 } });
       return;
     }
     if (!stripeReady) {
@@ -157,15 +167,27 @@ function BuyCreditsPage() {
           {method === "points" ? (
             <ul className="mt-5 space-y-1.5 text-sm text-muted-foreground">
               <li>Needed: {formatPoints(neededPoints)}</li>
+              <li>Already in wallet: {formatCents(funding.alreadyCoveredCents)}</li>
               <li>Applied now: {formatPoints(applyPoints)}</li>
               <li>
                 Leftover to balance:{" "}
-                {leftoverCents === 0 ? "none — points cover it" : formatCents(leftoverCents)}
+                {leftoverCents === 0
+                  ? "none — wallet and points cover it"
+                  : formatCents(leftoverCents)}
               </li>
             </ul>
+          ) : leftoverCents === 0 ? (
+            <p className="mt-5 text-sm text-muted-foreground">
+              You already have {formatCents(availableCents)} available — enough for this rank.
+              Allocate it from your listings.
+            </p>
           ) : (
             <p className="mt-5 text-sm text-muted-foreground">
-              Stripe will charge {formatCents(leftoverCents)} and add that to available credits.
+              Stripe will charge {formatCents(leftoverCents)}
+              {funding.alreadyCoveredCents > 0
+                ? ` after applying ${formatCents(funding.alreadyCoveredCents)} already in your wallet`
+                : ""}{" "}
+              and add that to available credits.
             </p>
           )}
 
@@ -182,7 +204,9 @@ function BuyCreditsPage() {
               {busy
                 ? "Working…"
                 : leftoverCents === 0
-                  ? "Convert points"
+                  ? method === "points" && applyPoints > 0
+                    ? "Convert points"
+                    : "Go allocate"
                   : `Pay ${formatCents(leftoverCents)}`}
             </Button>
             <Button asChild variant="secondary">

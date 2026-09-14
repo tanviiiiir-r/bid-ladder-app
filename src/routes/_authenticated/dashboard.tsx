@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Eye, Share2 } from "lucide-react";
@@ -129,6 +129,7 @@ const statusStyles: Record<string, string> = {
 };
 
 function DashboardPage() {
+  const navigate = useNavigate();
   const { topup, converted } = Route.useSearch();
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["my-listings"],
@@ -141,12 +142,14 @@ function DashboardPage() {
   const availableCents = wallet?.availableCents ?? 0;
 
   useEffect(() => {
-    if (topup) {
-      toast.success("Credits added. Allocate them on an approved listing to take a rank.");
-    } else if (converted) {
-      toast.success("Points converted to credits. Allocate them on an approved listing.");
-    }
-  }, [topup, converted]);
+    if (!topup && !converted) return;
+    toast.success(
+      topup
+        ? "Credits added. Allocate them on an approved listing to take a rank."
+        : "Points converted to credits. Allocate them on an approved listing.",
+    );
+    void navigate({ to: "/dashboard", search: {}, replace: true });
+  }, [topup, converted, navigate]);
 
   return (
     <div className="min-h-screen">

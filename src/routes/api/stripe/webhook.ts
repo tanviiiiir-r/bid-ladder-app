@@ -20,15 +20,25 @@ export const Route = createFileRoute("/api/stripe/webhook")({
         }
 
         const raw = await request.text();
+        let event;
         try {
-          const event = getStripe().webhooks.constructEvent(raw, signature, secret);
-          if (event.type === "checkout.session.completed") {
+          event = getStripe().webhooks.constructEvent(raw, signature, secret);
+        } catch (cause) {
+          const message = cause instanceof Error ? cause.message : "Webhook rejected";
+          return Response.json({ error: message }, { status: 400 });
+        }
+
+        try {
+          if (
+            event.type === "checkout.session.completed" ||
+            event.type === "checkout.session.async_payment_succeeded"
+          ) {
             await applyCompletedCheckout(event.data.object);
           }
           return Response.json({ received: true });
         } catch (cause) {
-          const message = cause instanceof Error ? cause.message : "Webhook rejected";
-          return Response.json({ error: message }, { status: 400 });
+          const message = cause instanceof Error ? cause.message : "Webhook processing failed";
+          return Response.json({ error: message }, { status: 500 });
         }
       },
     },
