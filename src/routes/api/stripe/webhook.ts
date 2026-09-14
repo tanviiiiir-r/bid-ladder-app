@@ -22,7 +22,9 @@ export const Route = createFileRoute("/api/stripe/webhook")({
         const raw = await request.text();
         let event;
         try {
-          event = getStripe().webhooks.constructEvent(raw, signature, secret);
+          // Cloudflare/Workers only expose SubtleCrypto, which Stripe's sync
+          // constructEvent cannot use. constructEventAsync is required there.
+          event = await getStripe().webhooks.constructEventAsync(raw, signature, secret);
         } catch (cause) {
           const message = cause instanceof Error ? cause.message : "Webhook rejected";
           return Response.json({ error: message }, { status: 400 });
